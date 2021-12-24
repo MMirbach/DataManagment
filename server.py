@@ -13,6 +13,12 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://MJ:Pogo97531@localhost/pol
 db = SQLAlchemy(app)
 
 
+class Admin(db.Model):
+    __tablename__ = 'admins'
+    admin_name = Column(String(64), primary_key=True)
+    password = Column(String(64))
+
+
 class User(db.Model):
     __tablename__ = 'users'
     chat_id = Column(String(64), primary_key=True)
