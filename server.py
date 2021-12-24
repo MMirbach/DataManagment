@@ -28,12 +28,18 @@ class Poll(db.Model):
     poll_question = Column(String(300), nullable=False)
     poll_answers = Column(ARRAY(String(100)),nullable=False)
 
+    def __repr__(self):
+        return f"Id: {self.poll_id}, question: {self.poll_question}, answers: {self.poll_answers}"
+
 
 class Answer(db.Model):
     __tablename__ = 'answers'
     chat = Column(String(64), ForeignKey('users.chat_id', ondelete='CASCADE'), primary_key=True)
     poll = Column(String(64), ForeignKey('polls.poll_id', ondelete='CASCADE'), primary_key=True)
     answer_index = Column(Integer)
+
+    def __repr__(self):
+        return f"Chat: {self.chat}, poll: {self.poll}, answer index: {self.answer_index}"
 
 
 @app.route('/register', methods=['POST'])
