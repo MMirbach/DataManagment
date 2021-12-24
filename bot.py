@@ -76,13 +76,6 @@ def printAnswer(update: Update, context: CallbackContext):
     pass
 
 
-def printUsername(update: Update, context: CallbackContext):
-    try:
-        print(context.user_data['username'])
-    except:
-        print('error')
-
-
 # TODO: check async responses
 
 def main():
@@ -91,7 +84,6 @@ def main():
     dp.add_handler(CommandHandler("start", start_handler))
     dp.add_handler(CommandHandler("register", register_user_handler))
     dp.add_handler(CommandHandler("remove", remove_user_handler))
-    dp.add_handler(CommandHandler("print", printUsername))
     dp.add_handler(PollAnswerHandler(printAnswer))
     updater.start_polling()
     updater.idle()
