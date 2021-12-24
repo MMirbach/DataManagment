@@ -1,7 +1,7 @@
 import requests, json
 from flask import Flask, request, abort
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import Column, String, Integer, ARRAY, ForeignKey, Table
+from sqlalchemy import Column, String, Integer, ARRAY, ForeignKey
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import UnmappedInstanceError
 from env import API_KEY
@@ -31,8 +31,8 @@ class Poll(db.Model):
 
 class Answer(db.Model):
     __tablename__ = 'answers'
-    chat = Column(String(64), ForeignKey('users.chat_id'), primary_key=True)
-    poll = Column(String(64), ForeignKey('polls.poll_id'), primary_key=True)
+    chat = Column(String(64), ForeignKey('users.chat_id', ondelete='CASCADE'), primary_key=True)
+    poll = Column(String(64), ForeignKey('polls.poll_id', ondelete='CASCADE'), primary_key=True)
     answer_index = Column(Integer)
 
 
@@ -45,7 +45,6 @@ def register_user():
         return f"Successfully registered {request.form.get('username')}"
     except IntegrityError:
         abort(409)
-
 
 
 @app.route('/remove/<chat_id>/<username>', methods=['DELETE'])
