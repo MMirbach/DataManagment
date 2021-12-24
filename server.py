@@ -18,6 +18,9 @@ class Admin(db.Model):
     admin_name = Column(String(64), primary_key=True)
     password = Column(String(64))
 
+    def __repr__(self):
+        return f"Name: {self.admin_name}"
+
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -85,7 +88,6 @@ def send_poll(chat_id):
 
 @app.errorhandler(409)
 def user_already_exists(error):
-    print(error)
     return "You already have a user", 409
 
 
