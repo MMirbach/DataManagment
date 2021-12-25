@@ -25,10 +25,9 @@ class Admin(db.Model):
 class User(db.Model):
     __tablename__ = 'users'
     chat_id = Column(String(64), primary_key=True)
-    username = Column(String(64))
 
     def __repr__(self):
-        return f"Name: {self.username}, chat: {self.chat_id}"
+        return f"Chat: {self.chat_id}"
 
 
 class Poll(db.Model):
@@ -51,44 +50,66 @@ class Answer(db.Model):
         return f"Chat: {self.chat}, poll: {self.poll}, answer index: {self.answer_index}"
 
 
-@app.route('/register', methods=['POST'])
+@app.route('/register/user', methods=['POST'])
 def register_user():
-    user = User(chat_id=request.form.get('chat_id'), username=request.form.get('username'))
+    user = User(chat_id=request.form.get('chat_id'))
     try:
         db.session.add(user)
         db.session.commit()
-        return f"Successfully registered {request.form.get('username')}"
+        return "Successfully registered"
     except IntegrityError:
-        abort(409)
+        abort(409, "You are already registered")
 
 
-@app.route('/remove/<chat_id>/<username>', methods=['DELETE'])
-def remove_user(chat_id, username):
+@app.route('/remove/<chat_id>', methods=['DELETE'])
+def remove_user(chat_id):
     try:
-        user = User.query.filter_by(chat_id=chat_id, username=username).first()
+        user = User.query.filter_by(chat_id=chat_id).first()
         db.session.delete(user)
         db.session.commit()
-        return f"Successfully removed {username}"
+        return "Successfully unregistered"
     except UnmappedInstanceError:
-        # this exception is received even if this chat has no user
-        return f"{username} isn't your username"
+        return "You were already unregistered"
 
 
-@app.route('/<chat_id>', methods=['GET'])
-def send_poll(chat_id):
+@app.route('/register/poll', methods=['POST'])
+def register_poll():
+    poll_question, poll_answers = request.form.get('question'), request.form.getlist('answers')
     parameters = {
-        "chat_id" : chat_id,
-        "question" : "What's up?",
-        "options" : json.dumps(["good", "ok", "bad"])
+        "chat_id" : request.form.get('chat_id'),
+        "question" : poll_question,
+        "options" : json.dumps(poll_answers),
+        "is_anonymous" : False
     }
-    requests.get(send_poll_url, data=parameters)
+    resp = requests.get(send_poll_url, data=parameters)
+    poll = Poll(poll_id=resp.json()['result']['poll']['id'],
+                poll_question= poll_question,
+                poll_answers= poll_answers)
+    db.session.add(poll)
+    db.session.commit()
 
     return ""
 
 
+@app.route('/register/poll_answer', methods=['POST'])
+def register_answer():
+    try:
+        poll_id, answer_index = request.form.get('poll'), request.form.get('answer_index')
+        answer_index_int = int(answer_index)
+        poll = Poll.query.filter_by(poll_id=poll_id).first()
+        if answer_index_int < 0 or answer_index_int >= len(poll.poll_answers):
+            raise IntegrityError
+        answer = Answer(chat=request.form.get('chat'), poll=poll_id, answer_index=answer_index)
+        db.session.add(answer)
+        db.session.commit()
+        return ""
+    except IntegrityError:
+        abort(409, "Invalid answer")
+
+
 @app.errorhandler(409)
 def user_already_exists(error):
-    return "You already have a user", 409
+    return str(error), 409
 
 
 if __name__ == '__main__':

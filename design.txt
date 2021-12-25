@@ -1,8 +1,6 @@
 Functions: 
 	1	register
-		a	args.len != 1 => error
-		b	each chat can only register 1 user
+		a	no username, you register with your chat id
 	2	remove
-		a 	args.len != 1 => error
-		b	you can only remove the username associated with your chat id
+		a	removes your chat id from the db
 		
