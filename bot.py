@@ -1,6 +1,6 @@
 from telegram.ext import *
 from telegram.update import Update
-from env import API_KEY
+from utils import API_KEY
 import requests
 
 
@@ -45,8 +45,8 @@ def remove_user_handler(update: Update, context: CallbackContext):
 
 def register_answer_handler(update: Update, context: CallbackContext):
     data = {
-        'chat': update.poll_answer.user.id,
-        'poll': update.poll_answer.poll_id,
+        'chat_id': update.poll_answer.user.id,
+        'telegram_poll_id': update.poll_answer.poll_id,
         'answer_index': update.poll_answer.option_ids[0]
     }
     requests.post(f"http://localhost:5000/register/poll_answer", data=data)

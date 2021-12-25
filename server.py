@@ -1,53 +1,10 @@
-import requests, json
-from flask import Flask, request, abort
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import Column, String, Integer, ARRAY, ForeignKey
+import json
+from flask import request, abort
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import UnmappedInstanceError
-from env import API_KEY
-
-send_poll_url = f"https://api.telegram.org/bot{API_KEY}/sendPoll"
-
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://MJ:Pogo97531@localhost/polls'
-db = SQLAlchemy(app)
-
-
-class Admin(db.Model):
-    __tablename__ = 'admins'
-    admin_name = Column(String(64), primary_key=True)
-    password = Column(String(64))
-
-    def __repr__(self):
-        return f"Name: {self.admin_name}"
-
-
-class User(db.Model):
-    __tablename__ = 'users'
-    chat_id = Column(String(64), primary_key=True)
-
-    def __repr__(self):
-        return f"Chat: {self.chat_id}"
-
-
-class Poll(db.Model):
-    __tablename__ = 'polls'
-    poll_id = Column(String(64), primary_key=True)
-    poll_question = Column(String(300), nullable=False)
-    poll_answers = Column(ARRAY(String(100)),nullable=False)
-
-    def __repr__(self):
-        return f"Id: {self.poll_id}, question: {self.poll_question}, answers: {self.poll_answers}"
-
-
-class Answer(db.Model):
-    __tablename__ = 'answers'
-    chat = Column(String(64), ForeignKey('users.chat_id', ondelete='CASCADE'), primary_key=True)
-    poll = Column(String(64), ForeignKey('polls.poll_id', ondelete='CASCADE'), primary_key=True)
-    answer_index = Column(Integer)
-
-    def __repr__(self):
-        return f"Chat: {self.chat}, poll: {self.poll}, answer index: {self.answer_index}"
+from app_init import app, db
+from db_utils import User, Poll, Answer, Admin, PollMapping, create_poll, \
+    get_matching_chat_ids, send_polls_to_chats
 
 
 @app.route('/register/user', methods=['POST'])
@@ -72,44 +29,60 @@ def remove_user(chat_id):
         return "You were already unregistered"
 
 
+def translate_str_to_filters_dict(poll_filters: str):
+    # TODO
+    return dict()
+
+
 @app.route('/register/poll', methods=['POST'])
 def register_poll():
     poll_question, poll_answers = request.form.get('question'), request.form.getlist('answers')
-    parameters = {
-        "chat_id" : request.form.get('chat_id'),
-        "question" : poll_question,
-        "options" : json.dumps(poll_answers),
-        "is_anonymous" : False
-    }
-    resp = requests.get(send_poll_url, data=parameters)
-    poll = Poll(poll_id=resp.json()['result']['poll']['id'],
-                poll_question= poll_question,
-                poll_answers= poll_answers)
-    db.session.add(poll)
-    db.session.commit()
+    poll_id = create_poll(poll_question, poll_answers)
+    # TODO: Grab all relevant chat ids
+    chat_ids = get_matching_chat_ids(translate_str_to_filters_dict(request.form.get('poll_filters')))
 
+    parameters = {
+        "chat_id": "",
+        "question": poll_question,
+        "options": json.dumps(poll_answers),
+        "is_anonymous": False
+    }
+    send_polls_to_chats(chat_ids=chat_ids, poll_id=poll_id, parameters=parameters)
+    # TODO: return value
     return ""
 
 
 @app.route('/register/poll_answer', methods=['POST'])
 def register_answer():
     try:
-        poll_id, answer_index = request.form.get('poll'), request.form.get('answer_index')
-        answer_index_int = int(answer_index)
+        telegram_poll_id, chat_id, answer_index = request.form.get('telegram_poll_id'), request.form.get('chat_id'), \
+                                                  int(request.form.get('answer_index'))
+        poll_mapping = PollMapping.query.filter_by(telegram_poll_id=telegram_poll_id).first()
+        poll_id = poll_mapping.poll_id
         poll = Poll.query.filter_by(poll_id=poll_id).first()
-        if answer_index_int < 0 or answer_index_int >= len(poll.poll_answers):
+        if answer_index < 0 or answer_index >= len(poll.poll_answers):
             raise IntegrityError
-        answer = Answer(chat=request.form.get('chat'), poll=poll_id, answer_index=answer_index)
+        answer = Answer(chat_id=chat_id, poll_id=poll_id, answer_index=answer_index)
         db.session.add(answer)
+        db.session.delete(poll_mapping)
         db.session.commit()
         return ""
     except IntegrityError:
         abort(409, "Invalid answer")
+    except AttributeError:
+        abort(409, "Poll inactive")
+    except ...:
+        abort(500, "Unknown error")
 
 
 @app.errorhandler(409)
 def user_already_exists(error):
     return str(error), 409
+
+
+@app.errorhandler(500)
+def user_already_exists(error):
+    return str(error), 500
 
 
 if __name__ == '__main__':
