@@ -15,7 +15,7 @@ db = SQLAlchemy(app)
 class Admin(db.Model):
     __tablename__ = 'admins'
     admin_name = Column(String(64), primary_key=True)
-    password = Column(String(64))
+    password = Column(String(64), nullable=False)
 
     def __repr__(self):
         return f"Name: {self.admin_name}"
