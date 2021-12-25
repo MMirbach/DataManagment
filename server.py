@@ -1,4 +1,3 @@
-import requests, json
 from flask import Flask, request, abort
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Column, String, Integer, ARRAY, ForeignKey
@@ -70,41 +69,6 @@ def remove_user(chat_id):
         return "Successfully unregistered"
     except UnmappedInstanceError:
         return "You were already unregistered"
-
-
-@app.route('/register/poll', methods=['POST'])
-def register_poll():
-    poll_question, poll_answers = request.form.get('question'), request.form.getlist('answers')
-    parameters = {
-        "chat_id" : request.form.get('chat_id'),
-        "question" : poll_question,
-        "options" : json.dumps(poll_answers),
-        "is_anonymous" : False
-    }
-    resp = requests.get(send_poll_url, data=parameters)
-    poll = Poll(poll_id=resp.json()['result']['poll']['id'],
-                poll_question= poll_question,
-                poll_answers= poll_answers)
-    db.session.add(poll)
-    db.session.commit()
-
-    return ""
-
-
-@app.route('/register/poll_answer', methods=['POST'])
-def register_answer():
-    try:
-        poll_id, answer_index = request.form.get('poll'), request.form.get('answer_index')
-        answer_index_int = int(answer_index)
-        poll = Poll.query.filter_by(poll_id=poll_id).first()
-        if answer_index_int < 0 or answer_index_int >= len(poll.poll_answers):
-            raise IntegrityError
-        answer = Answer(chat=request.form.get('chat'), poll=poll_id, answer_index=answer_index)
-        db.session.add(answer)
-        db.session.commit()
-        return ""
-    except IntegrityError:
-        abort(409, "Invalid answer")
 
 
 @app.errorhandler(409)
