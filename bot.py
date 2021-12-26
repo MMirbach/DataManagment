@@ -7,11 +7,9 @@ import requests
 def start_handler(update: Update, context: CallbackContext):
     update.message.reply_text(f"Hello {update.message.chat.first_name}")
     update.message.reply_text("Welcome to smart polling.\nPlease choose one of the options:")
-    update.message.reply_text("/register <user-name> - Register to start answering polls via telegram\n"
-                              "<user-name> in smart polling system\n"
+    update.message.reply_text("/register - Register to start answering polls via telegram\n"
                               "\n"
-                              "/remove <user-name> - To stop getting polls queries\n"
-                              "<user-name> in smart polling system\n"
+                              "/remove - To stop getting polls queries\n"
                               "\n"
                               "/start - Use start anytime see get this menu again")
 
