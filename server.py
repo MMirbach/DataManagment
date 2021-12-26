@@ -76,12 +76,12 @@ def register_answer():
 
 
 @app.errorhandler(409)
-def user_already_exists(error):
+def conflict(error):
     return str(error), 409
 
 
 @app.errorhandler(500)
-def user_already_exists(error):
+def internal_error(error):
     return str(error), 500
 
 
