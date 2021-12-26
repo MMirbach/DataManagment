@@ -54,7 +54,11 @@ class PollMapping(db.Model):
 def create_poll(poll_question, poll_answers):
     while True:
         try:
-            poll_id = db.session.query(func.max(Poll.poll_id)).scalar() + 1
+            poll_id = db.session.query(func.max(Poll.poll_id)).scalar()
+            if poll_id is None:
+                poll_id = 0
+            else:
+                poll_id += 1
             new_poll = Poll(poll_id=poll_id, poll_question=poll_question, poll_answers=poll_answers)
             db.session.add(new_poll)
             db.session.commit()
@@ -64,10 +68,12 @@ def create_poll(poll_question, poll_answers):
             continue
 
 
-def get_matching_chat_ids(poll_filtering: dict):
+def get_matching_chat_ids(poll_filters: dict):
+    if len(poll_filters) == 0:
+        return [user.chat_id for user in User.query.all()]
     chat_ids = list()
     ran_first_time = False
-    for k, v in poll_filtering.items():
+    for k, v in poll_filters.items():
         if ran_first_time and len(chat_ids) == 0:
             break
         else:

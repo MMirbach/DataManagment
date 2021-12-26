@@ -1,7 +1,7 @@
 from telegram.ext import *
 from telegram.update import Update
 from utils import API_KEY
-import requests
+import requests, json
 
 
 def start_handler(update: Update, context: CallbackContext):
@@ -54,12 +54,14 @@ def send_poll(update: Update, context: CallbackContext):
     question, answers = ' '.join(context.args).split('?')
     question += '?'
     answers = answers.split(',')
+    filters = {}
     data = {
         'chat_id' : update.message.chat_id,
         'question' : question,
-        'answers' : answers
+        'answers' : answers,
+        "poll_filters" : filters
     }
-    requests.post(f"http://localhost:5000/register/poll", data=data)
+    requests.post(f"http://localhost:5000/register/poll", data={'data' : json.dumps(data)})
 
 
 # TODO: check async responses
@@ -67,11 +69,12 @@ def send_poll(update: Update, context: CallbackContext):
 if __name__ == '__main__':
     updater = Updater(API_KEY)
     dp = updater.dispatcher
-    dp.add_handler(CommandHandler("start", start_handler))
-    dp.add_handler(CommandHandler("register", register_user_handler))
-    dp.add_handler(CommandHandler("remove", remove_user_handler))
+    dp.add_handler(CommandHandler("start", start_handler, run_async=True))
+    dp.add_handler(CommandHandler("register", register_user_handler, run_async=True))
+    dp.add_handler(CommandHandler("remove", remove_user_handler, run_async=True))
     dp.add_handler(CommandHandler("send", send_poll))
     dp.add_handler(PollAnswerHandler(register_answer_handler))
+
     updater.start_polling()
     updater.idle()
 

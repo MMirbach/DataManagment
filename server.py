@@ -29,17 +29,15 @@ def remove_user(chat_id):
         return "You were already unregistered"
 
 
-def translate_str_to_filters_dict(poll_filters: str):
-    # TODO
-    return dict()
-
-
 @app.route('/register/poll', methods=['POST'])
 def register_poll():
-    poll_question, poll_answers = request.form.get('question'), request.form.getlist('answers')
+    data = json.loads(request.form.get('data'))
+    poll_question, poll_answers = data['question'], data['answers']
     poll_id = create_poll(poll_question, poll_answers)
-    # TODO: Grab all relevant chat ids
-    chat_ids = get_matching_chat_ids(translate_str_to_filters_dict(request.form.get('poll_filters')))
+    poll_filters = {}
+    for k, v in data['poll_filters'].items():
+        poll_filters[int(k)] = v
+    chat_ids = get_matching_chat_ids(poll_filters)
 
     parameters = {
         "chat_id": "",
@@ -48,7 +46,6 @@ def register_poll():
         "is_anonymous": False
     }
     send_polls_to_chats(chat_ids=chat_ids, poll_id=poll_id, parameters=parameters)
-    # TODO: return value
     return ""
 
 
