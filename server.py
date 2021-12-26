@@ -41,7 +41,7 @@ class Poll(db.Model):
 
 class Answer(db.Model):
     __tablename__ = 'answers'
-    chat = Column(String(64), ForeignKey('users.chat_id', ondelete='CASCADE'), primary_key=True)
+    chat = Column(String(64), ForeignKey('users.chat_id'), primary_key=True)
     poll = Column(String(64), ForeignKey('polls.poll_id', ondelete='CASCADE'), primary_key=True)
     answer_index = Column(Integer)
 

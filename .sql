@@ -26,8 +26,7 @@ CREATE TABLE answers
     answer_index integer,
     CONSTRAINT answers_pkey PRIMARY KEY (chat, poll),
     CONSTRAINT answers_chat_fkey FOREIGN KEY (chat)
-        REFERENCES users (chat_id)
-        ON DELETE CASCADE,
+        REFERENCES users (chat_id),
     CONSTRAINT answers_poll_fkey FOREIGN KEY (poll)
         REFERENCES polls (poll_id)
         ON DELETE CASCADE
