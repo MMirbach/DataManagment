@@ -46,9 +46,9 @@ def remove_user_handler(update: Update, context: CallbackContext):
 if __name__ == '__main__':
     updater = Updater(API_KEY)
     dp = updater.dispatcher
-    dp.add_handler(CommandHandler("start", start_handler))
-    dp.add_handler(CommandHandler("register", register_user_handler))
-    dp.add_handler(CommandHandler("remove", remove_user_handler))
+    dp.add_handler(CommandHandler("start", start_handler, run_async=True))
+    dp.add_handler(CommandHandler("register", register_user_handler, run_async=True))
+    dp.add_handler(CommandHandler("remove", remove_user_handler, run_async=True))
     updater.start_polling()
     updater.idle()
 
