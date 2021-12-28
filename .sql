@@ -32,3 +32,13 @@ CREATE TABLE answers
         ON DELETE CASCADE
 );
 
+CREATE TABLE pollmapping
+(
+    telegram_poll_id character varying(64) NOT NULL,
+    poll_id integer NOT NULL,
+    CONSTRAINT pollmapping_pkey PRIMARY KEY (telegram_poll_id),
+    CONSTRAINT pollmapping_poll_id_fkey FOREIGN KEY (poll_id)
+        REFERENCES public.polls (poll_id) MATCH SIMPLE
+        ON DELETE CASCADE
+)
+
