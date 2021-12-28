@@ -2,16 +2,7 @@ from flask import request, abort
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import UnmappedInstanceError
 from app_init import app, db
-from db_utils import (
-    User,
-    Poll,
-    Answer,
-    Admin,
-    PollMapping,
-    create_poll,
-    get_matching_chat_ids,
-    send_polls_to_chats,
-)
+from db_utils import User
 
 
 @app.route("/register/user", methods=["POST"])
