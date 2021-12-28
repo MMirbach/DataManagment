@@ -54,6 +54,9 @@ def register_answer():
     try:
         telegram_poll_id, chat_id, answer_index = request.form.get('telegram_poll_id'), request.form.get('chat_id'), \
                                                   int(request.form.get('answer_index'))
+        user = User.query.filter_by(chat_id=chat_id)
+        if user is None:
+            raise IntegrityError
         poll_mapping = PollMapping.query.filter_by(telegram_poll_id=telegram_poll_id).first()
         poll_id = poll_mapping.poll_id
         poll = Poll.query.filter_by(poll_id=poll_id).first()
