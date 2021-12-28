@@ -1,19 +1,21 @@
 from telegram.ext import *
 from telegram.update import Update
-from env import API_KEY
-import requests
+from utils import API_KEY
+import requests, json
 
 
 def start_handler(update: Update, context: CallbackContext):
     update.message.reply_text(f"Hello {update.message.chat.first_name}")
-    update.message.reply_text("Welcome to smart polling.\nPlease choose one of the options:")
-    update.message.reply_text("/register <user-name> - Register to start answering polls via telegram\n"
-                              "<user-name> in smart polling system\n"
-                              "\n"
-                              "/remove <user-name> - To stop getting polls queries\n"
-                              "<user-name> in smart polling system\n"
-                              "\n"
-                              "/start - Use start anytime see get this menu again")
+    update.message.reply_text(
+        "Welcome to smart polling.\nPlease choose one of the options:"
+    )
+    update.message.reply_text(
+        "/register - Register to start answering polls via telegram\n"
+        "\n"
+        "/remove - To stop getting polls queries\n"
+        "\n"
+        "/start - Use start anytime see get this menu again"
+    )
 
 
 def error(update: Update, context: CallbackContext, errorString: str):
@@ -25,7 +27,7 @@ def respond(update: Update, context: CallbackContext, httpResponse: requests.Res
 
 
 def execute_register_user(update: Update, context: CallbackContext):
-    data = { 'chat_id': update.message.chat_id }
+    data = {"chat_id": update.message.chat_id}
     return requests.post(f"http://localhost:5000/register/user", data=data)
 
 
@@ -43,7 +45,7 @@ def remove_user_handler(update: Update, context: CallbackContext):
     respond(update, context, resp)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     updater = Updater(API_KEY)
     dp = updater.dispatcher
     dp.add_handler(CommandHandler("start", start_handler, run_async=True))
@@ -51,5 +53,3 @@ if __name__ == '__main__':
     dp.add_handler(CommandHandler("remove", remove_user_handler, run_async=True))
     updater.start_polling()
     updater.idle()
-
-
