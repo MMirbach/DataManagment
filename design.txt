@@ -16,7 +16,7 @@ DB:
 		We will print a message saying that the poll is no longer active.
 
 Semantics:
-1.	register/poll expects to get a form holding a single argument with key 'data' holding an object that has been turned
+1.	/polls expects to get a form holding a single argument with key 'data' holding an object that has been turned
 	to a string using json.dumps. This object is: 
 		{'question': question string, 'answers' : list of answer strings, 'poll_filters': dict of (poll_id, answer_index)}
 		at the moment it seems using json.dumps turns the keys to strings so we must return them to integers

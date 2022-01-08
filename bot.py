@@ -1,7 +1,7 @@
 from telegram.ext import *
 from telegram.update import Update
 import requests, json
-from config import server_port
+from config import server_port, bot_key
 
 
 def start_handler(update: Update, context: CallbackContext):
@@ -24,7 +24,7 @@ def respond(update: Update, context: CallbackContext, httpResponse: requests.Res
 
 def execute_register_user(update: Update, context: CallbackContext):
     data = { 'chat_id': update.message.chat_id }
-    return requests.post(f"http://localhost:{server_port}/register/user", data=data)
+    return requests.post(f"http://localhost:{server_port}/users", data=data)
 
 
 def register_user_handler(update: Update, context: CallbackContext):
@@ -33,7 +33,7 @@ def register_user_handler(update: Update, context: CallbackContext):
 
 
 def execute_remove_user(update: Update, context: CallbackContext):
-    return requests.delete(f"http://localhost:{server_port}/remove/{update.message.chat_id}")
+    return requests.delete(f"http://localhost:{server_port}/users/{update.message.chat_id}")
 
 
 def remove_user_handler(update: Update, context: CallbackContext):
@@ -47,7 +47,7 @@ def register_answer_handler(update: Update, context: CallbackContext):
         'telegram_poll_id': update.poll_answer.poll_id,
         'answer_index': update.poll_answer.option_ids[0]
     }
-    requests.post(f"http://localhost:{server_port}/register/poll_answer", data=data)
+    requests.post(f"http://localhost:{server_port}/poll_answers", data=data)
 
 
 def send_poll(update: Update, context: CallbackContext):
@@ -61,13 +61,13 @@ def send_poll(update: Update, context: CallbackContext):
         'answers' : answers,
         "poll_filters" : filters
     }
-    requests.post(f"http://localhost:{server_port}/register/poll", data={'data' : json.dumps(data)})
+    requests.post(f"http://localhost:{server_port}/polls", data={'data' : json.dumps(data)})
 
 
 # TODO: check async responses
 
 if __name__ == '__main__':
-    updater = Updater(API_KEY)
+    updater = Updater(bot_key)
     dp = updater.dispatcher
     dp.add_handler(CommandHandler("start", start_handler, run_async=True))
     dp.add_handler(CommandHandler("register", register_user_handler, run_async=True))

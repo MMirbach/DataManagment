@@ -1,0 +1,11 @@
+conda install -c conda-forge flask-sqlalchemy
+conda install -c anaconda requests
+conda install -c conda-forge python-telegram-bot
+conda install -c anaconda psycopg2
+
+
+export:
+conda env export > environment.yml
+
+load:
+conda env create -f environment.yml

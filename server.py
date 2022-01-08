@@ -1,14 +1,40 @@
 import json
-from flask import request, abort
+from flask import request, abort, jsonify
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import UnmappedInstanceError
 from app_init import app, db
 from db_utils import User, Poll, Answer, Admin, PollMapping, create_poll, \
     get_matching_chat_ids, send_polls_to_chats
-from config import server_port
+from config import server_port, frontend_port
 
 
-@app.route('/register/user', methods=['POST'])
+@app.after_request
+def add_cors_headers(response):
+    response.headers.add('Access-Control-Allow-Origin', f'http://localhost:{frontend_port}')
+    return response
+
+
+@app.route('/admins', methods=['GET'])
+def admins():
+    admin_names = Admin.query.with_entities(Admin.admin_name).all()
+    admin_name_list = [admin.admin_name for admin in admin_names]
+    return jsonify(admin_name_list)
+
+
+@app.route('/admins', methods=['POST'])
+def register_admin():
+    admin = Admin(admin_name=request.form.get('admin_name'), password=request.form.get('password'))
+    try:
+        db.session.add(admin)
+        db.session.commit()
+        return "Success"
+    except IntegrityError:
+        abort(409, "Admin already exists")
+    except:
+        abort(500, "Unknown error")
+
+
+@app.route('/users', methods=['POST'])
 def register_user():
     user = User(chat_id=request.form.get('chat_id'))
     try:
@@ -19,7 +45,7 @@ def register_user():
         abort(409, "You are already registered")
 
 
-@app.route('/remove/<chat_id>', methods=['DELETE'])
+@app.route('/users/<chat_id>', methods=['DELETE'])
 def remove_user(chat_id):
     try:
         user = User.query.filter_by(chat_id=chat_id).first()
@@ -30,7 +56,7 @@ def remove_user(chat_id):
         return "You were already unregistered"
 
 
-@app.route('/register/poll', methods=['POST'])
+@app.route('/polls', methods=['POST'])
 def register_poll():
     data = json.loads(request.form.get('data'))
     poll_question, poll_answers = data['question'], data['answers']
@@ -50,7 +76,7 @@ def register_poll():
     return ""
 
 
-@app.route('/register/poll_answer', methods=['POST'])
+@app.route('/poll_answers', methods=['POST'])
 def register_answer():
     try:
         telegram_poll_id, chat_id, answer_index = request.form.get('telegram_poll_id'), request.form.get('chat_id'), \
@@ -87,6 +113,14 @@ def internal_error(error):
 
 
 if __name__ == '__main__':
+    db.drop_all()
     db.create_all()
+    admin = Admin(admin_name="Matan", password="1234")
+    db.session.add(admin)
+    admin = Admin(admin_name="Ori", password="1234")
+    db.session.add(admin)
+    admin = Admin(admin_name="Dana", password="1234")
+    db.session.add(admin)
+    db.session.commit()
     app.run(port=server_port, debug=True)
 
