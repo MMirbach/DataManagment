@@ -2,7 +2,7 @@ from sqlalchemy import Column, String, Integer, ARRAY, ForeignKey
 from app_init import db
 from sqlalchemy import func
 import requests
-from utils import send_poll_url
+from config import send_poll_url
 
 
 class Admin(db.Model):

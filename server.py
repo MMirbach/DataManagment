@@ -5,6 +5,7 @@ from sqlalchemy.orm.exc import UnmappedInstanceError
 from app_init import app, db
 from db_utils import User, Poll, Answer, Admin, PollMapping, create_poll, \
     get_matching_chat_ids, send_polls_to_chats
+from config import server_port
 
 
 @app.route('/register/user', methods=['POST'])
@@ -87,5 +88,5 @@ def internal_error(error):
 
 if __name__ == '__main__':
     db.create_all()
-    app.run(debug=True)
+    app.run(port=server_port, debug=True)
 
