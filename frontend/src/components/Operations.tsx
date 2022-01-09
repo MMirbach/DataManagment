@@ -10,6 +10,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import React from "react";
 import { TransitionProps } from "@mui/material/transitions";
 import ShowAdmins from "./ShowAdmins";
+import AddAdmin from "./AddAdmin";
 
 const Transition = React.forwardRef(function Transition(
     props: TransitionProps & {
@@ -63,6 +64,7 @@ const Operations: React.FC<OperationsProps> = ({ type, onClose }) => {
                 </Toolbar>
             </AppBar>
             {type === OperationTypes.ShowAdmins && <ShowAdmins></ShowAdmins>}
+            {type === OperationTypes.AddAdmin && <AddAdmin></AddAdmin>}
         </Dialog>
     );
 };

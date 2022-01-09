@@ -11,6 +11,7 @@ from config import server_port, frontend_port
 @app.after_request
 def add_cors_headers(response):
     response.headers.add('Access-Control-Allow-Origin', f'http://localhost:{frontend_port}')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
     return response
 
 
@@ -23,12 +24,15 @@ def admins():
 
 @app.route('/admins', methods=['POST'])
 def register_admin():
-    admin = Admin(admin_name=request.form.get('admin_name'), password=request.form.get('password'))
+    print(request.json['admin_name'])
+    print(request.json['password'])
+    new_admin = Admin(admin_name=request.json['admin_name'], password=request.json['password'])
     try:
-        db.session.add(admin)
+        db.session.add(new_admin)
         db.session.commit()
         return "Success"
-    except IntegrityError:
+    except IntegrityError as e:
+        print(e)
         abort(409, "Admin already exists")
     except:
         abort(500, "Unknown error")

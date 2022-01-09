@@ -1,6 +1,6 @@
 import React from "react";
-import axios from "axios";
-import { DBResponse } from "./CredForm";
+import axios, { AxiosResponse } from "axios";
+import CredForm from "./CredForm";
 
 interface AddAdminProps {}
 
@@ -8,15 +8,19 @@ const AddAdmin: React.FC<AddAdminProps> = () => {
     const handleSubmit = async (
         username: string,
         password: string
-    ): Promise<DBResponse> => {
-        const res = await axios.post("http://localhost:5000/admins", {
-            username: username,
-            password: password,
-        });
-        return { success: res.status === 200, msg: res.data };
+    ): Promise<string> => {
+        try {
+            const res = await axios.post("http://localhost:5000/admins", {
+                admin_name: username,
+                password: password,
+            });
+            return res.data;
+        } catch (error: AxiosResponse<any, any> | any) {
+            return error.response.data;
+        }
     };
 
-    return <div></div>;
+    return <CredForm onSubmit={handleSubmit}></CredForm>;
 };
 
 export default AddAdmin;
