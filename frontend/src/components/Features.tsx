@@ -11,6 +11,7 @@ import React from "react";
 import { TransitionProps } from "@mui/material/transitions";
 import ShowAdmins from "./ShowAdmins";
 import AddAdmin from "./AddAdmin";
+import CreatePoll from "./CreatePoll";
 
 const Transition = React.forwardRef(function Transition(
     props: TransitionProps & {
@@ -21,23 +22,23 @@ const Transition = React.forwardRef(function Transition(
     return <Slide direction="up" ref={ref} {...props} />;
 });
 
-export enum OperationTypes {
+export enum FeatureTypes {
     None = 0,
     ShowAdmins = 1,
     AddAdmin = 2,
     CreatePoll = 3,
 }
 
-interface OperationsProps {
-    type: OperationTypes;
+interface FeaturesProps {
+    type: FeatureTypes;
     onClose: () => void;
 }
 
-const Operations: React.FC<OperationsProps> = ({ type, onClose }) => {
+const Features: React.FC<FeaturesProps> = ({ type, onClose }) => {
     return (
         <Dialog
             fullScreen
-            open={type !== OperationTypes.None}
+            open={type !== FeatureTypes.None}
             onClose={onClose}
             TransitionComponent={Transition}
         >
@@ -56,17 +57,17 @@ const Operations: React.FC<OperationsProps> = ({ type, onClose }) => {
                         variant="h6"
                         component="div"
                     >
-                        {(type === OperationTypes.ShowAdmins && "Admins") ||
-                            (type === OperationTypes.AddAdmin && "Add Admin") ||
-                            (type === OperationTypes.CreatePoll &&
-                                "Create Poll")}
+                        {(type === FeatureTypes.ShowAdmins && "Admins") ||
+                            (type === FeatureTypes.AddAdmin && "Add Admin") ||
+                            (type === FeatureTypes.CreatePoll && "Create Poll")}
                     </Typography>
                 </Toolbar>
             </AppBar>
-            {type === OperationTypes.ShowAdmins && <ShowAdmins></ShowAdmins>}
-            {type === OperationTypes.AddAdmin && <AddAdmin></AddAdmin>}
+            {type === FeatureTypes.ShowAdmins && <ShowAdmins></ShowAdmins>}
+            {type === FeatureTypes.AddAdmin && <AddAdmin></AddAdmin>}
+            {type === FeatureTypes.CreatePoll && <CreatePoll></CreatePoll>}
         </Dialog>
     );
 };
 
-export default Operations;
+export default Features;

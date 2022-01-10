@@ -3,6 +3,10 @@ Functions:
 	a.	no username, you register with your chat id
 2.	remove
 	a.	removes your chat id from the db
+3.  polls (get)
+	a. returns a list of objects, each object is in the format:
+	{question: "question string", answers: array of objects { answer: "answer string", count: num } }
+	
 
 DB:
 1.	Tables:
@@ -16,12 +20,11 @@ DB:
 		We will print a message saying that the poll is no longer active.
 
 Semantics:
-1.	/polls expects to get a form holding a single argument with key 'data' holding an object that has been turned
-	to a string using json.dumps. This object is: 
+1.	/polls (post) expects to get a json that has : 
 		{'question': question string, 'answers' : list of answer strings, 'poll_filters': dict of (poll_id, answer_index)}
 		at the moment it seems using json.dumps turns the keys to strings so we must return them to integers
 1.	In function 'get_matching_chat_ids', arg 'poll_filtering' is a dictionary with poll_id keys and answer_index values.
 
 Notes (TODO):
 1.	Consider giving a time limit option to setting a poll (to admin).
-2.	
+2.	don't hard code 5000 into the urls in the frontend. get the parameter from config.py somehow.

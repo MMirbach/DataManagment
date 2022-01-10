@@ -38,7 +38,7 @@ const Navbar: React.FC<NavBarProps> = ({
     };
 
     return (
-        <AppBar position="static">
+        <AppBar position="sticky">
             <Container maxWidth="xl">
                 <Toolbar disableGutters>
                     <Typography
@@ -115,6 +115,7 @@ const Navbar: React.FC<NavBarProps> = ({
                         variant="text"
                         color="inherit"
                         sx={{
+                            ml: 2,
                             flexGrow: 1,
                             display: { xs: "none", md: "flex" },
                         }}

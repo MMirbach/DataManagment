@@ -7,33 +7,33 @@ import {
     OutlinedInput,
     InputAdornment,
     IconButton,
-    Typography,
-    Collapse,
-    Alert,
 } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
-import CloseIcon from "@mui/icons-material/Close";
 import React, { useState } from "react";
+import FeedbackAlert, { AlertProps } from "./FeedbackAlert";
 
 interface CredFormState {
     username: string;
     password: string;
-    msg: string;
     showPassword: boolean;
     loading: boolean;
+    alert: AlertProps;
 }
 
 interface CredFormProps {
-    onSubmit: (username: string, password: string) => Promise<string>;
+    onSubmit: (username: string, password: string) => Promise<AlertProps>;
 }
 
 const CredForm: React.FC<CredFormProps> = ({ onSubmit }) => {
     const [creds, setCreds] = useState<CredFormState>({
         username: "",
         password: "",
-        msg: "",
         showPassword: false,
         loading: false,
+        alert: {
+            ok: true,
+            msg: "",
+        },
     });
 
     const handleChange =
@@ -60,14 +60,33 @@ const CredForm: React.FC<CredFormProps> = ({ onSubmit }) => {
             ...creds,
             loading: true,
         });
-        const res: string = await onSubmit(creds.username, creds.password);
-        setCreds({
-            ...creds,
-            username: "",
-            password: "",
-            msg: res,
-            loading: false,
-        });
+        if (!creds.username || !creds.password) {
+            setCreds({
+                ...creds,
+                username: "",
+                password: "",
+                loading: false,
+                alert: {
+                    ok: false,
+                    msg: "Username and Password cannot be empty",
+                },
+            });
+        } else {
+            const res: AlertProps = await onSubmit(
+                creds.username,
+                creds.password
+            );
+            setCreds({
+                ...creds,
+                username: "",
+                password: "",
+                loading: false,
+                alert: {
+                    ok: res.ok,
+                    msg: res.msg,
+                },
+            });
+        }
     };
 
     return (
@@ -78,29 +97,15 @@ const CredForm: React.FC<CredFormProps> = ({ onSubmit }) => {
                 flexDirection: "column",
             }}
         >
-            <Collapse in={creds.msg !== ""}>
-                <Alert
-                    severity={creds.msg === "Success" ? "success" : "error"}
-                    action={
-                        <IconButton
-                            aria-label="close"
-                            color="inherit"
-                            size="small"
-                            onClick={() => {
-                                setCreds({
-                                    ...creds,
-                                    msg: "",
-                                });
-                            }}
-                        >
-                            <CloseIcon fontSize="inherit" />
-                        </IconButton>
-                    }
-                    sx={{ mb: 2 }}
-                >
-                    {creds.msg}
-                </Alert>
-            </Collapse>
+            <FeedbackAlert
+                alert={creds.alert}
+                onClose={() => {
+                    setCreds({
+                        ...creds,
+                        alert: { ...creds.alert, msg: "" },
+                    });
+                }}
+            ></FeedbackAlert>
             <FormControl sx={{ m: 1, width: "25ch" }} variant="outlined">
                 <InputLabel htmlFor="outlined-adornment-username">
                     Username
