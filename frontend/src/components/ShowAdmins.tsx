@@ -8,7 +8,9 @@ const ShowAdmins: React.FC<ShowAdminsProps> = () => {
     const [adminNames, setAdminNames] = useState<Array<string>>([]);
 
     const getAdminNames = async (): Promise<Array<string>> => {
-        const res = await axios.get("http://localhost:5000/admins");
+        const res = await axios.get(
+            `http://localhost:${process.env.REACT_APP_SERVER_PORT}/admins`
+        );
         return res.data;
     };
 

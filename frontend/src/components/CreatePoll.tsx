@@ -64,11 +64,14 @@ const CreatePoll = () => {
             return;
         }
         try {
-            await axios.post("http://localhost:5000/polls", {
-                question: pollState.question,
-                answers: answers,
-                poll_filters: {},
-            });
+            await axios.post(
+                `http://localhost:${process.env.REACT_APP_SERVER_PORT}/polls`,
+                {
+                    question: pollState.question,
+                    answers: answers,
+                    poll_filters: {},
+                }
+            );
             setPollState({
                 ...pollState,
                 question: "",

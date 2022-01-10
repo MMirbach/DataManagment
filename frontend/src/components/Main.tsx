@@ -20,7 +20,9 @@ const Main: React.FC<MainProps> = ({ onLogOut }) => {
     const [polls, setPolls] = useState<Array<PollData>>([]);
 
     const getPolls = async (): Promise<Array<PollData>> => {
-        const res = await axios.get("http://localhost:5000/polls");
+        const res = await axios.get(
+            `http://localhost:${process.env.REACT_APP_SERVER_PORT}/polls`
+        );
         return res.data;
     };
 

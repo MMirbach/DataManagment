@@ -23,8 +23,10 @@ Semantics:
 1.	/polls (post) expects to get a json that has : 
 		{'question': question string, 'answers' : list of answer strings, 'poll_filters': dict of (poll_id, answer_index)}
 		at the moment it seems using json.dumps turns the keys to strings so we must return them to integers
-1.	In function 'get_matching_chat_ids', arg 'poll_filtering' is a dictionary with poll_id keys and answer_index values.
+2.	In function 'get_matching_chat_ids', arg 'poll_filtering' is a dictionary with poll_id keys and answer_index values.
+3.  our run_project file edits a .env file in the react folder with the server port in a variable called
+	REACT_APP_SERVER_PORT, we can use it in the frontend using proccess.env.REACT_APP_SERVER_PORT
 
 Notes (TODO):
 1.	Consider giving a time limit option to setting a poll (to admin).
-2.	don't hard code 5000 into the urls in the frontend. get the parameter from config.py somehow.
+3.  Maybe allow the user to switch charts between pie and xy

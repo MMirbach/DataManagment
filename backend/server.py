@@ -2,8 +2,8 @@ import json
 from flask import request, abort, jsonify
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import UnmappedInstanceError
-from app_init import app, db
-from db_utils import User, Poll, Answer, Admin, PollMapping, create_poll, \
+from backend.app_init import app, db
+from backend.db_utils import User, Poll, Answer, Admin, PollMapping, create_poll, \
     get_matching_chat_ids, send_polls_to_chats
 from config import server_port, frontend_port
 

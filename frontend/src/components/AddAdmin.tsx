@@ -11,10 +11,13 @@ const AddAdmin: React.FC<AddAdminProps> = () => {
         password: string
     ): Promise<AlertProps> => {
         try {
-            await axios.post("http://localhost:5000/admins", {
-                admin_name: username,
-                password: password,
-            });
+            await axios.post(
+                `http://localhost:${process.env.REACT_APP_SERVER_PORT}/admins`,
+                {
+                    admin_name: username,
+                    password: password,
+                }
+            );
             return { ok: true, msg: "Admin Added" };
         } catch (error: AxiosResponse<any, any> | any) {
             return { ok: false, msg: error.response.data };
