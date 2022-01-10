@@ -2,8 +2,8 @@ import json
 from flask import request, abort, jsonify
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import UnmappedInstanceError
-from backend.app_init import app, db
-from backend.db_utils import User, Poll, Answer, Admin, PollMapping, create_poll, \
+from app_init import app, db
+from db_utils import User, Poll, Answer, Admin, PollMapping, create_poll, \
     get_matching_chat_ids, send_polls_to_chats
 from config import server_port, frontend_port
 
@@ -192,7 +192,7 @@ if __name__ == '__main__':
     db.session.add(answer)
     answer = Answer(chat_id=3, poll_id=1, answer_index=0)
     db.session.add(answer)
-    answer = Answer(chat_id=3, poll_id=2, answer_index=1)
+    answer = Answer(chat_id=3, poll_id=2, answer_index=0)
     db.session.add(answer)
         # user 4
     answer = Answer(chat_id=4,poll_id=0,answer_index=1)

@@ -1,5 +1,5 @@
 from sqlalchemy import Column, String, Integer, ARRAY, ForeignKey
-from backend.app_init import db
+from app_init import db
 from sqlalchemy import func
 import requests
 from config import send_poll_url
