@@ -2,9 +2,14 @@ import * as am5 from "@amcharts/amcharts5";
 import * as am5percent from "@amcharts/amcharts5/percent";
 import am5themes_Animated from "@amcharts/amcharts5/themes/Animated";
 import * as am5xy from "@amcharts/amcharts5/xy";
-import { Button } from "@mui/material";
+import { Button, ToggleButton, ToggleButtonGroup } from "@mui/material";
 import axios from "axios";
 import React, { useState, useEffect, useLayoutEffect } from "react";
+
+enum ChartTypes {
+    Pie,
+    XY,
+}
 
 interface PollData {
     question: string;
@@ -15,7 +20,7 @@ interface ChartsProps {}
 
 const Charts: React.FC<ChartsProps> = () => {
     const [polls, setPolls] = useState<Array<PollData>>([]);
-    const [pieCharts, setPieCharts] = useState<boolean>(true);
+    const [chartType, setChartType] = useState<ChartTypes>(ChartTypes.Pie);
 
     const getPolls = async (): Promise<Array<PollData>> => {
         const res = await axios.get(
@@ -108,7 +113,7 @@ const Charts: React.FC<ChartsProps> = () => {
         getPolls().then(res => setPolls(res));
 
         return () => {};
-    }, [pieCharts]);
+    }, [chartType]);
 
     useEffect(() => {
         let root = am5.Root.new("graphs");
@@ -118,7 +123,7 @@ const Charts: React.FC<ChartsProps> = () => {
                 layout: root.verticalLayout,
                 width: am5.percent(100),
                 height: am5.percent(100),
-                x: pieCharts ? 0 : am5.percent(25),
+                x: chartType === ChartTypes.Pie ? 0 : am5.percent(25),
                 verticalScrollbar: am5.Scrollbar.new(root, {
                     orientation: "vertical",
                 }),
@@ -126,7 +131,7 @@ const Charts: React.FC<ChartsProps> = () => {
         );
 
         polls.map(poll => {
-            pieCharts
+            chartType === ChartTypes.Pie
                 ? addPieChart(root, chartContainer, poll)
                 : addXYChart(root, chartContainer, poll);
         });
@@ -135,19 +140,25 @@ const Charts: React.FC<ChartsProps> = () => {
         };
     }, [polls]);
 
-    const handleToggleChartType = () => {
-        setPieCharts(!pieCharts);
+    const handleChange = (
+        event: React.MouseEvent<HTMLElement>,
+        newChartType: ChartTypes
+    ) => {
+        setChartType(newChartType);
     };
 
     return (
         <React.Fragment>
-            <Button
-                variant="contained"
-                onClick={handleToggleChartType}
-                sx={{ m: 1 }}
+            <ToggleButtonGroup
+                color="primary"
+                value={chartType}
+                exclusive
+                onChange={handleChange}
             >
-                Change Chart Type
-            </Button>
+                <ToggleButton value={ChartTypes.Pie}>Pie Charts</ToggleButton>
+                <ToggleButton value={ChartTypes.XY}>Bar Charts</ToggleButton>
+            </ToggleButtonGroup>
+
             <div
                 id="graphs"
                 style={{

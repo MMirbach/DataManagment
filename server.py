@@ -237,5 +237,5 @@ if __name__ == '__main__':
     answer = Answer(chat_id=9, poll_id=2, answer_index=0)
     db.session.add(answer)
     db.session.commit()
-    app.run(port=server_port, debug=True)
+    app.run(port=server_port, )
 
