@@ -2,6 +2,7 @@ import * as am5 from "@amcharts/amcharts5";
 import * as am5percent from "@amcharts/amcharts5/percent";
 import am5themes_Animated from "@amcharts/amcharts5/themes/Animated";
 import * as am5xy from "@amcharts/amcharts5/xy";
+import { Button } from "@mui/material";
 import axios from "axios";
 import React, { useState, useEffect, useLayoutEffect } from "react";
 import Features, { FeatureTypes } from "./Features";
@@ -19,6 +20,7 @@ interface MainProps {
 const Main: React.FC<MainProps> = ({ onLogOut }) => {
     const [feature, setFeature] = useState<FeatureTypes>(FeatureTypes.None);
     const [polls, setPolls] = useState<Array<PollData>>([]);
+    const [pieCharts, setPieCharts] = useState<boolean>(true);
 
     const getPolls = async (): Promise<Array<PollData>> => {
         const res = await axios.get(
@@ -111,7 +113,7 @@ const Main: React.FC<MainProps> = ({ onLogOut }) => {
         getPolls().then(res => setPolls(res));
 
         return () => {};
-    }, []);
+    }, [pieCharts]);
 
     useEffect(() => {
         let root = am5.Root.new("graphs");
@@ -121,6 +123,7 @@ const Main: React.FC<MainProps> = ({ onLogOut }) => {
                 layout: root.verticalLayout,
                 width: am5.percent(100),
                 height: am5.percent(100),
+                x: pieCharts ? 0 : am5.percent(25),
                 verticalScrollbar: am5.Scrollbar.new(root, {
                     orientation: "vertical",
                 }),
@@ -128,7 +131,9 @@ const Main: React.FC<MainProps> = ({ onLogOut }) => {
         );
 
         polls.map(poll => {
-            addXYChart(root, chartContainer, poll);
+            pieCharts
+                ? addPieChart(root, chartContainer, poll)
+                : addXYChart(root, chartContainer, poll);
         });
         return () => {
             root.dispose();
@@ -147,6 +152,10 @@ const Main: React.FC<MainProps> = ({ onLogOut }) => {
         setFeature(FeatureTypes.CreatePoll);
     };
 
+    const handleToggleChartType = () => {
+        setPieCharts(!pieCharts);
+    };
+
     const handleClose = (): void => {
         setFeature(FeatureTypes.None);
     };
@@ -160,6 +169,13 @@ const Main: React.FC<MainProps> = ({ onLogOut }) => {
                 onLogOut={onLogOut}
             ></Navbar>
             <Features type={feature} onClose={handleClose}></Features>
+            <Button
+                variant="contained"
+                onClick={handleToggleChartType}
+                sx={{ m: 1 }}
+            >
+                Change Chart Type
+            </Button>
             <div
                 id="graphs"
                 style={{
