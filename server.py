@@ -35,6 +35,14 @@ def register_admin():
         abort(500, "Unknown error")
 
 
+@app.route('/admins/login', methods=['POST'])
+def login_admin():
+    admin = Admin.query.filter_by(admin_name=request.json['admin_name'], password=request.json['password']).first()
+    if admin is None:
+        abort(409, "No Such Admin")
+    return "Logged In"
+
+
 @app.route('/users', methods=['POST'])
 def register_user():
     user = User(chat_id=request.form.get('chat_id'))
@@ -126,9 +134,7 @@ def internal_error(error):
     return str(error), 500
 
 
-if __name__ == '__main__':
-    db.drop_all()
-    db.create_all()
+def setup_mock():
     # admins
     admin = Admin(admin_name="Matan", password="1234")
     db.session.add(admin)
@@ -137,13 +143,14 @@ if __name__ == '__main__':
     admin = Admin(admin_name="Dana", password="1234")
     db.session.add(admin)
     # polls
-    poll = Poll(poll_id=0,poll_question="how you doin?", poll_answers=["ok","fine","*giggle*"])
+    poll = Poll(poll_id=0, poll_question="how you doin?", poll_answers=["ok", "fine", "*giggle*"])
     db.session.add(poll)
     poll = Poll(poll_id=1, poll_question="what's your favorite color?", poll_answers=["black", "white"])
     db.session.add(poll)
-    poll = Poll(poll_id=2, poll_question="what's your favorite season?", poll_answers=["summer", "spring", "winter","fall"])
+    poll = Poll(poll_id=2, poll_question="what's your favorite season?",
+                poll_answers=["summer", "spring", "winter", "fall"])
     db.session.add(poll)
-    #users
+    # users
     user = User(chat_id=0)
     db.session.add(user)
     user = User(chat_id=1)
@@ -166,76 +173,84 @@ if __name__ == '__main__':
     db.session.add(user)
     db.session.commit()
     # answers
-        # user 0
-    answer = Answer(chat_id=0,poll_id=0,answer_index=0)
+    # user 0
+    answer = Answer(chat_id=0, poll_id=0, answer_index=0)
     db.session.add(answer)
     answer = Answer(chat_id=0, poll_id=1, answer_index=0)
     db.session.add(answer)
     answer = Answer(chat_id=0, poll_id=2, answer_index=0)
     db.session.add(answer)
-        # user 1
-    answer = Answer(chat_id=1,poll_id=0,answer_index=1)
+    # user 1
+    answer = Answer(chat_id=1, poll_id=0, answer_index=1)
     db.session.add(answer)
     answer = Answer(chat_id=1, poll_id=1, answer_index=0)
     db.session.add(answer)
     answer = Answer(chat_id=1, poll_id=2, answer_index=2)
     db.session.add(answer)
-        # user 2
-    answer = Answer(chat_id=2,poll_id=0,answer_index=2)
+    # user 2
+    answer = Answer(chat_id=2, poll_id=0, answer_index=2)
     db.session.add(answer)
     answer = Answer(chat_id=2, poll_id=1, answer_index=1)
     db.session.add(answer)
     answer = Answer(chat_id=2, poll_id=2, answer_index=3)
     db.session.add(answer)
-        # user 3
-    answer = Answer(chat_id=3,poll_id=0,answer_index=0)
+    # user 3
+    answer = Answer(chat_id=3, poll_id=0, answer_index=0)
     db.session.add(answer)
     answer = Answer(chat_id=3, poll_id=1, answer_index=0)
     db.session.add(answer)
     answer = Answer(chat_id=3, poll_id=2, answer_index=0)
     db.session.add(answer)
-        # user 4
-    answer = Answer(chat_id=4,poll_id=0,answer_index=1)
+    # user 4
+    answer = Answer(chat_id=4, poll_id=0, answer_index=1)
     db.session.add(answer)
     answer = Answer(chat_id=4, poll_id=1, answer_index=1)
     db.session.add(answer)
     answer = Answer(chat_id=4, poll_id=2, answer_index=3)
     db.session.add(answer)
-        # user 5
-    answer = Answer(chat_id=5,poll_id=0,answer_index=2)
+    # user 5
+    answer = Answer(chat_id=5, poll_id=0, answer_index=2)
     db.session.add(answer)
     answer = Answer(chat_id=5, poll_id=1, answer_index=1)
     db.session.add(answer)
     answer = Answer(chat_id=5, poll_id=2, answer_index=2)
     db.session.add(answer)
-        # user 6
-    answer = Answer(chat_id=6,poll_id=0,answer_index=1)
+    # user 6
+    answer = Answer(chat_id=6, poll_id=0, answer_index=1)
     db.session.add(answer)
     answer = Answer(chat_id=6, poll_id=1, answer_index=0)
     db.session.add(answer)
     answer = Answer(chat_id=6, poll_id=2, answer_index=0)
     db.session.add(answer)
-        # user 7
-    answer = Answer(chat_id=7,poll_id=0,answer_index=0)
+    # user 7
+    answer = Answer(chat_id=7, poll_id=0, answer_index=0)
     db.session.add(answer)
     answer = Answer(chat_id=7, poll_id=1, answer_index=1)
     db.session.add(answer)
     answer = Answer(chat_id=7, poll_id=2, answer_index=2)
     db.session.add(answer)
-        # user 8
-    answer = Answer(chat_id=8,poll_id=0,answer_index=1)
+    # user 8
+    answer = Answer(chat_id=8, poll_id=0, answer_index=1)
     db.session.add(answer)
     answer = Answer(chat_id=8, poll_id=1, answer_index=0)
     db.session.add(answer)
     answer = Answer(chat_id=8, poll_id=2, answer_index=3)
     db.session.add(answer)
-        # user 9
-    answer = Answer(chat_id=9,poll_id=0,answer_index=2)
+    # user 9
+    answer = Answer(chat_id=9, poll_id=0, answer_index=2)
     db.session.add(answer)
     answer = Answer(chat_id=9, poll_id=1, answer_index=1)
     db.session.add(answer)
     answer = Answer(chat_id=9, poll_id=2, answer_index=0)
     db.session.add(answer)
+    User.query.delete()
     db.session.commit()
-    app.run(port=server_port, )
+
+
+if __name__ == '__main__':
+    db.drop_all()
+    db.create_all()
+    setup_mock()
+
+    app.run(port=server_port, debug=True)
 

@@ -92,8 +92,11 @@ const CredForm: React.FC<CredFormProps> = ({ onSubmit }) => {
     return (
         <Box
             sx={{
+                height: "80vh",
+                width: "100hh",
                 display: "flex",
                 justifyContent: "center",
+                alignItems: "center",
                 flexDirection: "column",
             }}
         >
