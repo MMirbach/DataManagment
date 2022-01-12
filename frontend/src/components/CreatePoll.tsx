@@ -1,9 +1,10 @@
 import { LoadingButton } from "@mui/lab";
-import { Box, TextField } from "@mui/material";
+import { Box, Grid, TextField } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
 import React, { useState } from "react";
 import FeedbackAlert, { AlertProps } from "./FeedbackAlert";
 import axios, { AxiosResponse } from "axios";
+import Filters, { FilterData, Poll } from "./Filters";
 
 interface CreatePollState {
     question: string;
@@ -25,6 +26,7 @@ const CreatePoll = () => {
         loading: false,
         alert: { ok: true, msg: "" },
     });
+    const [activeFilters, setActiveFilters] = useState<Array<FilterData>>([]);
 
     const handleChange =
         (prop: keyof CreatePollState) =>
@@ -63,13 +65,16 @@ const CreatePoll = () => {
             });
             return;
         }
+        const filters = activeFilters.map((filter: FilterData) => ({
+            [filter.poll_id]: filter.answerIndex,
+        }));
         try {
-            await axios.post(
+            const res = await axios.post(
                 `http://localhost:${process.env.REACT_APP_SERVER_PORT}/polls`,
                 {
                     question: pollState.question,
                     answers: answers,
-                    poll_filters: {},
+                    poll_filters: filters,
                 }
             );
             setPollState({
@@ -82,9 +87,10 @@ const CreatePoll = () => {
                 loading: false,
                 alert: {
                     ok: true,
-                    msg: "Sent poll",
+                    msg: res.data,
                 },
             });
+            setActiveFilters([]);
         } catch (error: AxiosResponse<any, any> | any) {
             setPollState({
                 ...pollState,
@@ -97,28 +103,56 @@ const CreatePoll = () => {
         }
     };
 
+    const handleAddFilter = (poll: Poll, answerIndex: string): void => {
+        const newFilter: FilterData = {
+            poll_id: poll.poll_id,
+            question: poll.question,
+            answerIndex: answerIndex,
+            answer: poll.answers[parseInt(answerIndex)],
+        };
+        var filters = [...activeFilters];
+        filters.push(newFilter);
+        setActiveFilters(filters);
+    };
+
+    const handleRemoveFilter = (index: number): void => {
+        const filters = activeFilters.filter(
+            (f: FilterData, i: number) => i !== index
+        );
+        setActiveFilters(filters);
+    };
+
     return (
-        <Box
+        <Grid
+            container
             component="form"
             sx={{
                 "& .MuiTextField-root": {
                     m: 1,
-                    display: "flex",
-                    flexDirection: "column",
                 },
             }}
             autoComplete="off"
         >
-            <FeedbackAlert
-                alert={pollState.alert}
-                onClose={() => {
-                    setPollState({
-                        ...pollState,
-                        alert: { ...pollState.alert, msg: "" },
-                    });
+            <Box sx={{ width: "100%" }}>
+                <FeedbackAlert
+                    alert={pollState.alert}
+                    onClose={() => {
+                        setPollState({
+                            ...pollState,
+                            alert: { ...pollState.alert, msg: "" },
+                        });
+                    }}
+                ></FeedbackAlert>
+            </Box>
+            <Box
+                sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    ml: 5,
+                    mr: 5,
+                    mt: 2,
                 }}
-            ></FeedbackAlert>
-            <div>
+            >
                 <TextField
                     sx={{ width: "45ch" }}
                     id="outlined-required"
@@ -164,8 +198,15 @@ const CreatePoll = () => {
                 >
                     Submit
                 </LoadingButton>
-            </div>
-        </Box>
+            </Box>
+            <Box sx={{ mt: 2 }}>
+                <Filters
+                    filters={activeFilters}
+                    onAddFilter={handleAddFilter}
+                    onRemoveFilter={handleRemoveFilter}
+                ></Filters>
+            </Box>
+        </Grid>
     );
 };
 

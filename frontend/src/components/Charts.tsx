@@ -24,7 +24,7 @@ const Charts: React.FC<ChartsProps> = () => {
 
     const getPolls = async (): Promise<Array<PollData>> => {
         const res = await axios.get(
-            `http://localhost:${process.env.REACT_APP_SERVER_PORT}/polls`
+            `http://localhost:${process.env.REACT_APP_SERVER_PORT}/results`
         );
         return res.data;
     };
@@ -112,7 +112,9 @@ const Charts: React.FC<ChartsProps> = () => {
     useLayoutEffect(() => {
         getPolls().then(res => setPolls(res));
 
-        return () => {};
+        return () => {
+            setPolls([]);
+        };
     }, [chartType]);
 
     useEffect(() => {
@@ -130,7 +132,7 @@ const Charts: React.FC<ChartsProps> = () => {
             })
         );
 
-        polls.map(poll => {
+        polls.map((poll: PollData) => {
             chartType === ChartTypes.Pie
                 ? addPieChart(root, chartContainer, poll)
                 : addXYChart(root, chartContainer, poll);

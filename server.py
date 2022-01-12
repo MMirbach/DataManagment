@@ -65,8 +65,8 @@ def remove_user(chat_id):
         return "You were already unregistered"
 
 
-@app.route('/polls', methods=['GET'])
-def get_polls():
+@app.route('/results', methods=['GET'])
+def get_results():
     polls = Poll.query.all()
     poll_list = []
     for poll in polls:
@@ -79,14 +79,30 @@ def get_polls():
     return jsonify(poll_list)
 
 
+@app.route('/polls', methods=['GET'])
+def get_polls():
+    polls = Poll.query.all()
+    poll_list = []
+    for poll in polls:
+        poll_list.append({"poll_id":poll.poll_id, "question": poll.poll_question, "answers": poll.poll_answers})
+    return jsonify(poll_list)
+
+
 @app.route('/polls', methods=['POST'])
 def register_poll():
     poll_question, poll_answers = request.json['question'], request.json['answers']
     poll_id = create_poll(poll_question, poll_answers)
     poll_filters = {}
-    for k, v in request.json['poll_filters'].items():
-        poll_filters[int(k)] = v
+    for d in request.json['poll_filters']:
+        for k, v in d.items():
+            key = int(k)
+            if key in poll_filters and poll_filters[key] != v:
+                return "Sent the poll to 0 users"
+            poll_filters[key] = v
+    # for d in request.json['poll_filters']:
+    #     poll_filters[d.keys()[0]] = v
     chat_ids = get_matching_chat_ids(poll_filters)
+    print(chat_ids)
 
     parameters = {
         "chat_id": "",
@@ -94,8 +110,8 @@ def register_poll():
         "options": json.dumps(poll_answers),
         "is_anonymous": False
     }
-    send_polls_to_chats(chat_ids=chat_ids, poll_id=poll_id, parameters=parameters)
-    return ""
+    # send_polls_to_chats(chat_ids=chat_ids, poll_id=poll_id, parameters=parameters)
+    return f"Sent the poll to {len(chat_ids)} users"
 
 
 @app.route('/poll_answers', methods=['POST'])
@@ -243,7 +259,7 @@ def setup_mock():
     db.session.add(answer)
     answer = Answer(chat_id=9, poll_id=2, answer_index=0)
     db.session.add(answer)
-    User.query.delete()
+    # User.query.delete()
     db.session.commit()
 
 

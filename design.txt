@@ -29,4 +29,3 @@ Semantics:
 
 Notes (TODO):
 1.	Consider giving a time limit option to setting a poll (to admin).
-3.  Maybe allow the user to switch charts between pie and xy

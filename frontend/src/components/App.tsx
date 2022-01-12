@@ -16,13 +16,12 @@ const decodeString = (encoded: string): string => {
 
 function App() {
     const [user, setUser] = useState<string>("");
+
     const handleLogOut = (): void => {
         setUser("");
     };
-    const handleLogin = async (
-        username: string,
-        password: string
-    ): Promise<AlertProps> => {
+
+    const handleLogin = async (username: string, password: string) => {
         try {
             await axios.post(
                 `http://localhost:${process.env.REACT_APP_SERVER_PORT}/admins/login`,
@@ -31,10 +30,10 @@ function App() {
                     password: password,
                 }
             );
-            setUser(username);
+            setTimeout(() => setUser(username), 500);
+            //setUser(username);
             return { ok: true, msg: "Logged In" };
         } catch (error: AxiosResponse<any, any> | any) {
-            console.log(error);
             return { ok: false, msg: error.response.data };
         }
     };

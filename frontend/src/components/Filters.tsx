@@ -13,31 +13,68 @@ import {
     TableBody,
     IconButton,
     SelectChangeEvent,
+    Button,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
-import React, { useState } from "react";
+import React, { useLayoutEffect, useRef, useState } from "react";
+import axios from "axios";
 
-interface FilterData {
-    pollId: number;
+export interface Poll {
+    poll_id: string;
     question: string;
-    answerIndex: number;
+    answers: Array<string>;
+}
+
+export interface FilterData {
+    poll_id: string;
+    question: string;
+    answerIndex: string;
     answer: string;
 }
 
 interface FiltersProps {
     filters: Array<FilterData>;
+    onAddFilter: (poll: Poll, answerIndex: string) => void;
+    onRemoveFilter: (index: number) => void;
 }
 
-const Filters: React.FC<FiltersProps> = ({ filters }) => {
-    const [question, setQuestion] = useState("");
-    const [answer, setAnswer] = useState("");
+const Filters: React.FC<FiltersProps> = ({
+    filters,
+    onAddFilter,
+    onRemoveFilter,
+}) => {
+    const [selectedPoll, setSelectedPoll] = useState<Poll>({
+        poll_id: "",
+        question: "",
+        answers: [],
+    });
+    const [polls, setPolls] = useState<Array<Poll>>([]);
 
-    const handleChange = (event: SelectChangeEvent) => {
-        setQuestion(event.target.value);
+    const getPolls = async (): Promise<Array<Poll>> => {
+        const res = await axios.get(
+            `http://localhost:${process.env.REACT_APP_SERVER_PORT}/polls`
+        );
+        return res.data;
     };
 
-    const handleChange2 = (event: SelectChangeEvent) => {
-        setAnswer(event.target.value);
+    useLayoutEffect(() => {
+        getPolls().then(res => setPolls(res));
+        return () => {
+            setPolls([]);
+        };
+    }, []);
+
+    const handleChangeQuestion = (event: SelectChangeEvent) => {
+        setSelectedPoll(
+            polls.filter((poll: Poll) => poll.poll_id === event.target.value)[0]
+        );
+    };
+
+    const handleChangeAnswer = (event: SelectChangeEvent) => {
+        console.log(event);
+        console.log(event.target);
+        onAddFilter(selectedPoll, event.target.value);
+        setSelectedPoll({ poll_id: "", question: "", answers: [] });
     };
 
     return (
@@ -52,37 +89,38 @@ const Filters: React.FC<FiltersProps> = ({ filters }) => {
             <Typography variant="h5">Filter Recipients:</Typography>
             <Box>
                 <FormControl sx={{ m: 1, minWidth: 120 }}>
-                    <InputLabel id="demo-simple-select-helper-label">
-                        Question
-                    </InputLabel>
+                    <InputLabel id="question-label">Question</InputLabel>
                     <Select
-                        labelId="demo-simple-select-helper-label"
-                        id="demo-simple-select-helper"
-                        value={question}
+                        labelId="question-label"
+                        id="question-helper"
+                        value={selectedPoll.poll_id}
                         label="Question"
-                        onChange={handleChange}
+                        onChange={handleChangeQuestion}
                     >
-                        <MenuItem value="">None</MenuItem>
-                        <MenuItem value={10}>Ten</MenuItem>
-                        <MenuItem value={20}>Twenty</MenuItem>
-                        <MenuItem value={30}>Thirty</MenuItem>
+                        {polls.map((poll: Poll) => (
+                            <MenuItem key={poll.poll_id} value={poll.poll_id}>
+                                {poll.question}
+                            </MenuItem>
+                        ))}
                     </Select>
                 </FormControl>
                 <FormControl sx={{ m: 1, minWidth: 120 }}>
-                    <InputLabel id="demo-simple-select-helper-label2">
-                        Answer
-                    </InputLabel>
+                    <InputLabel id="answer-label">Answer</InputLabel>
                     <Select
-                        labelId="demo-simple-select-helper-label2"
-                        id="demo-simple-select-helper2"
-                        value={answer}
+                        labelId="answer-label"
+                        id="answer-label"
+                        value={""}
                         label="Answer"
-                        onChange={handleChange2}
+                        readOnly={selectedPoll.poll_id === ""}
+                        onChange={handleChangeAnswer}
                     >
-                        <MenuItem value="">None</MenuItem>
-                        <MenuItem value={10}>Ten</MenuItem>
-                        <MenuItem value={20}>Twenty</MenuItem>
-                        <MenuItem value={30}>Thirty</MenuItem>
+                        {selectedPoll.answers.map(
+                            (answer: string, index: number) => (
+                                <MenuItem key={index} value={index}>
+                                    {answer}
+                                </MenuItem>
+                            )
+                        )}
                     </Select>
                 </FormControl>
             </Box>
@@ -102,7 +140,12 @@ const Filters: React.FC<FiltersProps> = ({ filters }) => {
                                 (filter: FilterData, index: number) => (
                                     <TableRow key={index}>
                                         <TableCell>
-                                            <IconButton edge="start">
+                                            <IconButton
+                                                edge="start"
+                                                onClick={() =>
+                                                    onRemoveFilter(index)
+                                                }
+                                            >
                                                 <DeleteIcon />
                                             </IconButton>
                                         </TableCell>
