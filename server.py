@@ -4,18 +4,22 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import UnmappedInstanceError
 from app_init import app, db
 from db_utils import User, Poll, Answer, Admin, PollMapping, create_poll, \
-    get_matching_chat_ids, send_polls_to_chats
+    get_matching_chat_ids, send_polls_to_chats, auth
 from config import server_port, frontend_port
+from werkzeug.security import generate_password_hash
+from base64 import b64decode
 
 
 @app.after_request
 def add_cors_headers(response):
     response.headers.add('Access-Control-Allow-Origin', f'http://localhost:{frontend_port}')
     response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
+    response.headers.add('Access-Control-Allow-Headers', 'Authorization')
     return response
 
 
 @app.route('/admins', methods=['GET'])
+@auth.login_required()
 def admins():
     admin_names = Admin.query.with_entities(Admin.admin_name).all()
     admin_name_list = [admin.admin_name for admin in admin_names]
@@ -23,8 +27,10 @@ def admins():
 
 
 @app.route('/admins', methods=['POST'])
+@auth.login_required()
 def register_admin():
-    admin = Admin(admin_name=request.json['admin_name'], password=request.json['password'])
+    admin = Admin(admin_name=request.json['admin_name'],
+                  password_hash=generate_password_hash(request.json['password']))
     try:
         db.session.add(admin)
         db.session.commit()
@@ -37,9 +43,10 @@ def register_admin():
 
 @app.route('/admins/login', methods=['POST'])
 def login_admin():
-    admin = Admin.query.filter_by(admin_name=request.json['admin_name'], password=request.json['password']).first()
-    if admin is None:
-        abort(409, "No Such Admin")
+    admin_name, password = b64decode(request.json['user']).decode('utf-8').split(':')
+    admin = Admin.query.filter_by(admin_name=admin_name).first()
+    if admin is None or not admin.verify_password(password):
+        abort(409, "Wrong username or password")
     return "Logged In"
 
 
@@ -66,6 +73,7 @@ def remove_user(chat_id):
 
 
 @app.route('/results', methods=['GET'])
+@auth.login_required()
 def get_results():
     polls = Poll.query.all()
     poll_list = []
@@ -80,6 +88,7 @@ def get_results():
 
 
 @app.route('/polls', methods=['GET'])
+@auth.login_required()
 def get_polls():
     polls = Poll.query.all()
     poll_list = []
@@ -89,6 +98,7 @@ def get_polls():
 
 
 @app.route('/polls', methods=['POST'])
+@auth.login_required()
 def register_poll():
     poll_question, poll_answers = request.json['question'], request.json['answers']
     poll_id = create_poll(poll_question, poll_answers)
@@ -152,11 +162,11 @@ def internal_error(error):
 
 def setup_mock():
     # admins
-    admin = Admin(admin_name="Matan", password="1234")
+    admin = Admin(admin_name="Matan", password_hash=generate_password_hash("1234"))
     db.session.add(admin)
-    admin = Admin(admin_name="Ori", password="1234")
+    admin = Admin(admin_name="Ori", password_hash=generate_password_hash("1234"))
     db.session.add(admin)
-    admin = Admin(admin_name="Dana", password="1234")
+    admin = Admin(admin_name="Dana", password_hash=generate_password_hash("1234"))
     db.session.add(admin)
     # polls
     poll = Poll(poll_id=0, poll_question="how you doin?", poll_answers=["ok", "fine", "*giggle*"])

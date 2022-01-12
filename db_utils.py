@@ -3,12 +3,17 @@ from app_init import db
 from sqlalchemy import func
 import requests
 from config import send_poll_url
+from werkzeug.security import check_password_hash
+from flask_httpauth import HTTPBasicAuth
 
 
 class Admin(db.Model):
     __tablename__ = 'admins'
     admin_name = Column(String(64), primary_key=True)
-    password = Column(String(64), nullable=False)
+    password_hash = Column(String(128), nullable=False)
+
+    def verify_password(self, password) -> bool:
+        return check_password_hash(self.password_hash, password)
 
     def __repr__(self):
         return f"Name: {self.admin_name}"
@@ -49,6 +54,18 @@ class PollMapping(db.Model):
 
     def __repr__(self):
         return f"Poll ID: {self.poll_id}, Telegram Poll ID: {self.telegram_poll_id}"
+
+
+auth = HTTPBasicAuth()
+
+@auth.verify_password
+def verify_password(username, password):
+    if not username:
+        return False
+    admin = Admin.query.filter_by(admin_name=username).first()
+    if admin is None:
+        return False
+    return admin.verify_password(password)
 
 
 def create_poll(poll_question, poll_answers):

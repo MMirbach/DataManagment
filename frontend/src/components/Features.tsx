@@ -32,9 +32,10 @@ export enum FeatureTypes {
 interface FeaturesProps {
     type: FeatureTypes;
     onClose: () => void;
+    on401: () => void;
 }
 
-const Features: React.FC<FeaturesProps> = ({ type, onClose }) => {
+const Features: React.FC<FeaturesProps> = ({ type, onClose, on401 }) => {
     return (
         <Dialog
             fullScreen
@@ -63,9 +64,15 @@ const Features: React.FC<FeaturesProps> = ({ type, onClose }) => {
                     </Typography>
                 </Toolbar>
             </AppBar>
-            {type === FeatureTypes.ShowAdmins && <ShowAdmins></ShowAdmins>}
-            {type === FeatureTypes.AddAdmin && <AddAdmin></AddAdmin>}
-            {type === FeatureTypes.CreatePoll && <CreatePoll></CreatePoll>}
+            {type === FeatureTypes.ShowAdmins && (
+                <ShowAdmins on401={on401}></ShowAdmins>
+            )}
+            {type === FeatureTypes.AddAdmin && (
+                <AddAdmin on401={on401}></AddAdmin>
+            )}
+            {type === FeatureTypes.CreatePoll && (
+                <CreatePoll on401={on401}></CreatePoll>
+            )}
         </Dialog>
     );
 };

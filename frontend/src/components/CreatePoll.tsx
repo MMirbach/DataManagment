@@ -3,7 +3,7 @@ import { Box, Grid, TextField } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
 import React, { useState } from "react";
 import FeedbackAlert, { AlertProps } from "./FeedbackAlert";
-import axios, { AxiosResponse } from "axios";
+import axios from "axios";
 import Filters, { FilterData, Poll } from "./Filters";
 
 interface CreatePollState {
@@ -16,7 +16,11 @@ interface CreatePollState {
     alert: AlertProps;
 }
 
-const CreatePoll = () => {
+interface CreatePollProps {
+    on401: () => void;
+}
+
+const CreatePoll: React.FC<CreatePollProps> = ({ on401 }) => {
     const [pollState, setPollState] = useState<CreatePollState>({
         question: "",
         answer1: "",
@@ -91,7 +95,8 @@ const CreatePoll = () => {
                 },
             });
             setActiveFilters([]);
-        } catch (error: AxiosResponse<any, any> | any) {
+        } catch (error: any) {
+            if (error.response.status === 401) on401();
             setPollState({
                 ...pollState,
                 loading: false,
@@ -204,6 +209,7 @@ const CreatePoll = () => {
                     filters={activeFilters}
                     onAddFilter={handleAddFilter}
                     onRemoveFilter={handleRemoveFilter}
+                    on401={on401}
                 ></Filters>
             </Box>
         </Grid>

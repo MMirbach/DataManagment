@@ -36,12 +36,14 @@ interface FiltersProps {
     filters: Array<FilterData>;
     onAddFilter: (poll: Poll, answerIndex: string) => void;
     onRemoveFilter: (index: number) => void;
+    on401: () => void;
 }
 
 const Filters: React.FC<FiltersProps> = ({
     filters,
     onAddFilter,
     onRemoveFilter,
+    on401,
 }) => {
     const [selectedPoll, setSelectedPoll] = useState<Poll>({
         poll_id: "",
@@ -51,10 +53,15 @@ const Filters: React.FC<FiltersProps> = ({
     const [polls, setPolls] = useState<Array<Poll>>([]);
 
     const getPolls = async (): Promise<Array<Poll>> => {
-        const res = await axios.get(
-            `http://localhost:${process.env.REACT_APP_SERVER_PORT}/polls`
-        );
-        return res.data;
+        try {
+            const res = await axios.get(
+                `http://localhost:${process.env.REACT_APP_SERVER_PORT}/polls`
+            );
+            return res.data;
+        } catch (error: any) {
+            if (error.response.status === 401) on401();
+            return [];
+        }
     };
 
     useLayoutEffect(() => {

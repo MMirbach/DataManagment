@@ -16,17 +16,24 @@ interface PollData {
     answers: Array<{ answer: string; count: number }>;
 }
 
-interface ChartsProps {}
+interface ChartsProps {
+    on401: () => void;
+}
 
-const Charts: React.FC<ChartsProps> = () => {
+const Charts: React.FC<ChartsProps> = ({ on401 }) => {
     const [polls, setPolls] = useState<Array<PollData>>([]);
     const [chartType, setChartType] = useState<ChartTypes>(ChartTypes.Pie);
 
     const getPolls = async (): Promise<Array<PollData>> => {
-        const res = await axios.get(
-            `http://localhost:${process.env.REACT_APP_SERVER_PORT}/results`
-        );
-        return res.data;
+        try {
+            const res = await axios.get(
+                `http://localhost:${process.env.REACT_APP_SERVER_PORT}/results`
+            );
+            return res.data;
+        } catch (error: any) {
+            if (error.response.status === 401) on401();
+            return [];
+        }
     };
 
     const addPieChart = (

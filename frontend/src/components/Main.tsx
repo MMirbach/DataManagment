@@ -34,8 +34,12 @@ const Main: React.FC<MainProps> = ({ onLogOut }) => {
                 onCreatePoll={handleCreatingPoll}
                 onLogOut={onLogOut}
             ></Navbar>
-            <Features type={feature} onClose={handleClose}></Features>
-            <Charts></Charts>
+            <Features
+                type={feature}
+                onClose={handleClose}
+                on401={onLogOut}
+            ></Features>
+            <Charts on401={onLogOut}></Charts>
         </React.Fragment>
     );
 };

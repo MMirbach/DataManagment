@@ -1,11 +1,13 @@
 import React from "react";
-import axios, { AxiosResponse } from "axios";
+import axios from "axios";
 import CredForm from "./CredForm";
 import { AlertProps } from "./FeedbackAlert";
 
-interface AddAdminProps {}
+interface AddAdminProps {
+    on401: () => void;
+}
 
-const AddAdmin: React.FC<AddAdminProps> = () => {
+const AddAdmin: React.FC<AddAdminProps> = ({ on401 }) => {
     const handleSubmit = async (
         username: string,
         password: string
@@ -19,7 +21,8 @@ const AddAdmin: React.FC<AddAdminProps> = () => {
                 }
             );
             return { ok: true, msg: "Admin Added" };
-        } catch (error: AxiosResponse<any, any> | any) {
+        } catch (error: any) {
+            if (error.response.status === 401) on401();
             return { ok: false, msg: error.response.data };
         }
     };

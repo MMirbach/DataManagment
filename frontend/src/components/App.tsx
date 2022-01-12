@@ -23,15 +23,13 @@ function App() {
 
     const handleLogin = async (username: string, password: string) => {
         try {
+            const encoded = encodeString(`${username}:${password}`);
             await axios.post(
                 `http://localhost:${process.env.REACT_APP_SERVER_PORT}/admins/login`,
-                {
-                    admin_name: username,
-                    password: password,
-                }
+                { user: encoded }
             );
             setTimeout(() => setUser(username), 500);
-            //setUser(username);
+            localStorage.setItem("user", encoded);
             return { ok: true, msg: "Logged In" };
         } catch (error: AxiosResponse<any, any> | any) {
             return { ok: false, msg: error.response.data };
