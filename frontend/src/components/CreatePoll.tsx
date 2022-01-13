@@ -2,7 +2,7 @@ import { LoadingButton } from "@mui/lab";
 import { Box, Grid, TextField } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
 import React, { useState } from "react";
-import FeedbackAlert, { AlertProps } from "./FeedbackAlert";
+import FeedbackAlert, { AlertProps, AlertTypes } from "./FeedbackAlert";
 import axios from "axios";
 import Filters, { FilterData, Poll } from "./Filters";
 
@@ -28,7 +28,7 @@ const CreatePoll: React.FC<CreatePollProps> = ({ on401 }) => {
         answer3: "",
         answer4: "",
         loading: false,
-        alert: { ok: true, msg: "" },
+        alert: { type: AlertTypes.Success, msg: "" },
     });
     const [activeFilters, setActiveFilters] = useState<Array<FilterData>>([]);
 
@@ -47,7 +47,10 @@ const CreatePoll: React.FC<CreatePollProps> = ({ on401 }) => {
             setPollState({
                 ...pollState,
                 loading: false,
-                alert: { ok: false, msg: "A poll must have a question" },
+                alert: {
+                    type: AlertTypes.Error,
+                    msg: "A poll must have a question",
+                },
             });
             return;
         }
@@ -63,7 +66,7 @@ const CreatePoll: React.FC<CreatePollProps> = ({ on401 }) => {
                 ...pollState,
                 loading: false,
                 alert: {
-                    ok: false,
+                    type: AlertTypes.Error,
                     msg: "A poll must have at least 2 answers",
                 },
             });
@@ -79,29 +82,44 @@ const CreatePoll: React.FC<CreatePollProps> = ({ on401 }) => {
                     question: pollState.question,
                     answers: answers,
                     poll_filters: filters,
+                },
+                {
+                    headers: {
+                        Authorization: `Basic ${localStorage.getItem("user")}`,
+                    },
                 }
             );
-            setPollState({
-                ...pollState,
-                question: "",
-                answer1: "",
-                answer2: "",
-                answer3: "",
-                answer4: "",
-                loading: false,
-                alert: {
-                    ok: true,
-                    msg: res.data,
-                },
-            });
-            setActiveFilters([]);
+            if (res.data.ok) {
+                setPollState({
+                    ...pollState,
+                    question: "",
+                    answer1: "",
+                    answer2: "",
+                    answer3: "",
+                    answer4: "",
+                    loading: false,
+                    alert: {
+                        type: AlertTypes.Success,
+                        msg: res.data.msg,
+                    },
+                });
+                setActiveFilters([]);
+            } else
+                setPollState({
+                    ...pollState,
+                    loading: false,
+                    alert: {
+                        type: AlertTypes.Warning,
+                        msg: res.data.msg,
+                    },
+                });
         } catch (error: any) {
             if (error.response.status === 401) on401();
             setPollState({
                 ...pollState,
                 loading: false,
                 alert: {
-                    ok: false,
+                    type: AlertTypes.Error,
                     msg: error.response.data,
                 },
             });

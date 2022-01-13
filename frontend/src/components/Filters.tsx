@@ -55,7 +55,12 @@ const Filters: React.FC<FiltersProps> = ({
     const getPolls = async (): Promise<Array<Poll>> => {
         try {
             const res = await axios.get(
-                `http://localhost:${process.env.REACT_APP_SERVER_PORT}/polls`
+                `http://localhost:${process.env.REACT_APP_SERVER_PORT}/polls`,
+                {
+                    headers: {
+                        Authorization: `Basic ${localStorage.getItem("user")}`,
+                    },
+                }
             );
             return res.data;
         } catch (error: any) {

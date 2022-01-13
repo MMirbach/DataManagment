@@ -2,8 +2,14 @@ import { Collapse, Alert, IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import React from "react";
 
+export enum AlertTypes {
+    Success = 0,
+    Error = 1,
+    Warning = 2,
+}
+
 export interface AlertProps {
-    ok: boolean;
+    type: AlertTypes;
     msg: string;
 }
 
@@ -16,7 +22,13 @@ const FeedbackAlert: React.FC<FeedbackAlertProps> = ({ alert, onClose }) => {
     return (
         <Collapse in={alert.msg !== ""}>
             <Alert
-                severity={alert.ok ? "success" : "error"}
+                severity={
+                    alert.type === AlertTypes.Success
+                        ? "success"
+                        : alert.type === AlertTypes.Error
+                        ? "error"
+                        : "warning"
+                }
                 action={
                     <IconButton
                         aria-label="close"

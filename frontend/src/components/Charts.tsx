@@ -27,7 +27,12 @@ const Charts: React.FC<ChartsProps> = ({ on401 }) => {
     const getPolls = async (): Promise<Array<PollData>> => {
         try {
             const res = await axios.get(
-                `http://localhost:${process.env.REACT_APP_SERVER_PORT}/results`
+                `http://localhost:${process.env.REACT_APP_SERVER_PORT}/results`,
+                {
+                    headers: {
+                        Authorization: `Basic ${localStorage.getItem("user")}`,
+                    },
+                }
             );
             return res.data;
         } catch (error: any) {

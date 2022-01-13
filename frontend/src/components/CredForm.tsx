@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
 import React, { useState } from "react";
-import FeedbackAlert, { AlertProps } from "./FeedbackAlert";
+import FeedbackAlert, { AlertProps, AlertTypes } from "./FeedbackAlert";
 
 interface CredFormState {
     username: string;
@@ -31,7 +31,7 @@ const CredForm: React.FC<CredFormProps> = ({ onSubmit }) => {
         showPassword: false,
         loading: false,
         alert: {
-            ok: true,
+            type: AlertTypes.Success,
             msg: "",
         },
     });
@@ -67,7 +67,7 @@ const CredForm: React.FC<CredFormProps> = ({ onSubmit }) => {
                 password: "",
                 loading: false,
                 alert: {
-                    ok: false,
+                    type: AlertTypes.Error,
                     msg: "Username and Password cannot be empty",
                 },
             });
@@ -82,7 +82,7 @@ const CredForm: React.FC<CredFormProps> = ({ onSubmit }) => {
                 password: "",
                 loading: false,
                 alert: {
-                    ok: res.ok,
+                    type: res.type,
                     msg: res.msg,
                 },
             });

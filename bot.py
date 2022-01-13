@@ -47,7 +47,8 @@ def register_answer_handler(update: Update, context: CallbackContext):
         'telegram_poll_id': update.poll_answer.poll_id,
         'answer_index': update.poll_answer.option_ids[0]
     }
-    requests.post(f"http://localhost:{server_port}/poll_answers", data=data)
+    resp = requests.post(f"http://localhost:{server_port}/poll_answers", data=data)
+
 
 
 def send_poll(update: Update, context: CallbackContext):

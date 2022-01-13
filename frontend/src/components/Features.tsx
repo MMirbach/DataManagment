@@ -12,6 +12,7 @@ import { TransitionProps } from "@mui/material/transitions";
 import ShowAdmins from "./ShowAdmins";
 import AddAdmin from "./AddAdmin";
 import CreatePoll from "./CreatePoll";
+import ShowPollsStatus from "./ShowPollsStatus";
 
 const Transition = React.forwardRef(function Transition(
     props: TransitionProps & {
@@ -25,8 +26,9 @@ const Transition = React.forwardRef(function Transition(
 export enum FeatureTypes {
     None = 0,
     ShowAdmins = 1,
-    AddAdmin = 2,
-    CreatePoll = 3,
+    ShowPollStatus = 2,
+    AddAdmin = 3,
+    CreatePoll = 4,
 }
 
 interface FeaturesProps {
@@ -59,6 +61,8 @@ const Features: React.FC<FeaturesProps> = ({ type, onClose, on401 }) => {
                         component="div"
                     >
                         {(type === FeatureTypes.ShowAdmins && "Admins") ||
+                            (type === FeatureTypes.ShowPollStatus &&
+                                "Polls Status") ||
                             (type === FeatureTypes.AddAdmin && "Add Admin") ||
                             (type === FeatureTypes.CreatePoll && "Create Poll")}
                     </Typography>
@@ -66,6 +70,9 @@ const Features: React.FC<FeaturesProps> = ({ type, onClose, on401 }) => {
             </AppBar>
             {type === FeatureTypes.ShowAdmins && (
                 <ShowAdmins on401={on401}></ShowAdmins>
+            )}
+            {type === FeatureTypes.ShowPollStatus && (
+                <ShowPollsStatus on401={on401}></ShowPollsStatus>
             )}
             {type === FeatureTypes.AddAdmin && (
                 <AddAdmin on401={on401}></AddAdmin>

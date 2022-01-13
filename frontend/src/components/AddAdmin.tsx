@@ -1,7 +1,7 @@
 import React from "react";
 import axios from "axios";
 import CredForm from "./CredForm";
-import { AlertProps } from "./FeedbackAlert";
+import { AlertProps, AlertTypes } from "./FeedbackAlert";
 
 interface AddAdminProps {
     on401: () => void;
@@ -18,12 +18,17 @@ const AddAdmin: React.FC<AddAdminProps> = ({ on401 }) => {
                 {
                     admin_name: username,
                     password: password,
+                },
+                {
+                    headers: {
+                        Authorization: `Basic ${localStorage.getItem("user")}`,
+                    },
                 }
             );
-            return { ok: true, msg: "Admin Added" };
+            return { type: AlertTypes.Success, msg: "Admin Added" };
         } catch (error: any) {
             if (error.response.status === 401) on401();
-            return { ok: false, msg: error.response.data };
+            return { type: AlertTypes.Error, msg: error.response.data };
         }
     };
 

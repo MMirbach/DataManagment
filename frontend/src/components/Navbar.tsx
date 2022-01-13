@@ -13,20 +13,14 @@ import {
 import MenuIcon from "@mui/icons-material/Menu";
 import React from "react";
 import { useState } from "react";
+import { FeatureTypes } from "./Features";
 
 interface NavBarProps {
-    onShowAdmins: () => void;
-    onAddAdmin: () => void;
-    onCreatePoll: () => void;
+    onChange: (feature: FeatureTypes) => void;
     onLogOut: () => void;
 }
 
-const Navbar: React.FC<NavBarProps> = ({
-    onShowAdmins,
-    onAddAdmin,
-    onCreatePoll,
-    onLogOut,
-}) => {
+const Navbar: React.FC<NavBarProps> = ({ onChange, onLogOut }) => {
     const [anchorElNav, setAnchorElNav] = useState<null | HTMLElement>(null);
 
     const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
@@ -83,17 +77,40 @@ const Navbar: React.FC<NavBarProps> = ({
                                 display: { xs: "block", md: "none" },
                             }}
                         >
-                            <MenuItem key={0} onClick={onShowAdmins}>
+                            <MenuItem
+                                key={0}
+                                onClick={() =>
+                                    onChange(FeatureTypes.ShowAdmins)
+                                }
+                            >
                                 <Typography textAlign="center">
                                     Show Admins
                                 </Typography>
                             </MenuItem>
-                            <MenuItem key={1} onClick={onAddAdmin}>
+                            <MenuItem
+                                key={1}
+                                onClick={() =>
+                                    onChange(FeatureTypes.ShowPollStatus)
+                                }
+                            >
+                                <Typography textAlign="center">
+                                    Show Poll Status
+                                </Typography>
+                            </MenuItem>
+                            <MenuItem
+                                key={2}
+                                onClick={() => onChange(FeatureTypes.AddAdmin)}
+                            >
                                 <Typography textAlign="center">
                                     Add Admin
                                 </Typography>
                             </MenuItem>
-                            <MenuItem key={2} onClick={onCreatePoll}>
+                            <MenuItem
+                                key={3}
+                                onClick={() =>
+                                    onChange(FeatureTypes.CreatePoll)
+                                }
+                            >
                                 <Typography textAlign="center">
                                     Create Poll
                                 </Typography>
@@ -122,21 +139,30 @@ const Navbar: React.FC<NavBarProps> = ({
                     >
                         <Button
                             key={0}
-                            onClick={onShowAdmins}
+                            onClick={() => onChange(FeatureTypes.ShowAdmins)}
                             sx={{ my: 2, color: "white", display: "block" }}
                         >
                             Show Admins
                         </Button>
                         <Button
                             key={1}
-                            onClick={onAddAdmin}
+                            onClick={() =>
+                                onChange(FeatureTypes.ShowPollStatus)
+                            }
+                            sx={{ my: 2, color: "white", display: "block" }}
+                        >
+                            Show Polls Status
+                        </Button>
+                        <Button
+                            key={2}
+                            onClick={() => onChange(FeatureTypes.AddAdmin)}
                             sx={{ my: 2, color: "white", display: "block" }}
                         >
                             Add Admin
                         </Button>
                         <Button
-                            key={2}
-                            onClick={onCreatePoll}
+                            key={3}
+                            onClick={() => onChange(FeatureTypes.CreatePoll)}
                             sx={{ my: 2, color: "white", display: "block" }}
                         >
                             Create Poll

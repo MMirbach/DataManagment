@@ -1,8 +1,8 @@
-from sqlalchemy import Column, String, Integer, ARRAY, ForeignKey
+from sqlalchemy import Column, String, Integer, ARRAY, ForeignKey, Boolean
 from app_init import db
 from sqlalchemy import func
 import requests
-from config import send_poll_url
+from config import send_poll_url, send_msg_url
 from werkzeug.security import check_password_hash
 from flask_httpauth import HTTPBasicAuth
 
@@ -32,6 +32,8 @@ class Poll(db.Model):
     poll_id = Column(Integer, primary_key=True)
     poll_question = Column(String(300), nullable=False)
     poll_answers = Column(ARRAY(String(100)),nullable=False)
+    recipients = Column(Integer, nullable=False)
+    active = Column(Boolean, nullable=False, default=True)
 
     def __repr__(self):
         return f"Id: {self.poll_id}, question: {self.poll_question}, answers: {self.poll_answers}"
@@ -68,7 +70,7 @@ def verify_password(username, password):
     return admin.verify_password(password)
 
 
-def create_poll(poll_question, poll_answers):
+def create_poll(poll_question, poll_answers, recipients):
     while True:
         try:
             poll_id = db.session.query(func.max(Poll.poll_id)).scalar()
@@ -76,7 +78,8 @@ def create_poll(poll_question, poll_answers):
                 poll_id = 0
             else:
                 poll_id += 1
-            new_poll = Poll(poll_id=poll_id, poll_question=poll_question, poll_answers=poll_answers)
+            new_poll = Poll(poll_id=poll_id, poll_question=poll_question,
+                            poll_answers=poll_answers, recipients=recipients)
             db.session.add(new_poll)
             db.session.commit()
             return poll_id
@@ -104,7 +107,7 @@ def get_matching_chat_ids(poll_filters: dict):
     return chat_ids
 
 
-def send_polls_to_chats(chat_ids: list, poll_id: int, parameters: dict):
+def send_poll_to_chats(chat_ids: list, poll_id: int, parameters: dict):
     for chat_id in chat_ids:
         parameters['chat_id'] = chat_id
         resp = requests.get(send_poll_url, data=parameters)
@@ -116,3 +119,9 @@ def send_polls_to_chats(chat_ids: list, poll_id: int, parameters: dict):
             print(f"Poll mapping {poll_id}:{telegram_poll_id} was not inserted into the database. This was probably "
                   f"caused by a synchronization error.\nError: {e}")
             continue
+
+
+def send_msg_to_chats(chat_ids: list, msg: str):
+    for chat_id in chat_ids:
+        requests.get(send_msg_url, data={'chat_id':chat_id,'text':msg})
+

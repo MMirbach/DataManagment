@@ -4,7 +4,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import UnmappedInstanceError
 from app_init import app, db
 from db_utils import User, Poll, Answer, Admin, PollMapping, create_poll, \
-    get_matching_chat_ids, send_polls_to_chats, auth
+    get_matching_chat_ids, send_poll_to_chats, send_msg_to_chats, auth
 from config import server_port, frontend_port
 from werkzeug.security import generate_password_hash
 from base64 import b64decode
@@ -15,6 +15,7 @@ def add_cors_headers(response):
     response.headers.add('Access-Control-Allow-Origin', f'http://localhost:{frontend_port}')
     response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
     response.headers.add('Access-Control-Allow-Headers', 'Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'PUT')
     return response
 
 
@@ -101,18 +102,18 @@ def get_polls():
 @auth.login_required()
 def register_poll():
     poll_question, poll_answers = request.json['question'], request.json['answers']
-    poll_id = create_poll(poll_question, poll_answers)
     poll_filters = {}
     for d in request.json['poll_filters']:
         for k, v in d.items():
             key = int(k)
             if key in poll_filters and poll_filters[key] != v:
-                return "Sent the poll to 0 users"
+                return jsonify({"msg":"Conflicting filters were given, action cancelled", 'ok':False})
             poll_filters[key] = v
-    # for d in request.json['poll_filters']:
-    #     poll_filters[d.keys()[0]] = v
     chat_ids = get_matching_chat_ids(poll_filters)
-    print(chat_ids)
+    num_recipients = len(chat_ids)
+    if num_recipients == 0:
+        return jsonify({"msg":"No users would receive this poll, action cancelled", 'ok':False})
+    poll_id = create_poll(poll_question, poll_answers, num_recipients)
 
     parameters = {
         "chat_id": "",
@@ -120,8 +121,48 @@ def register_poll():
         "options": json.dumps(poll_answers),
         "is_anonymous": False
     }
-    # send_polls_to_chats(chat_ids=chat_ids, poll_id=poll_id, parameters=parameters)
-    return f"Sent the poll to {len(chat_ids)} users"
+    send_poll_to_chats(chat_ids=chat_ids, poll_id=poll_id, parameters=parameters)
+    return jsonify({"msg":f"Sent the poll to {num_recipients} users",'ok': True})
+
+
+@app.route('/polls', methods=['PUT'])
+@auth.login_required()
+def close_poll():
+    poll_question, poll_id = request.json['question'], request.json['poll_id']
+    chat_ids = Answer.query.filter_by(poll_id=poll_id).with_entities(Answer.chat_id).all()
+    active_chats = User.query.with_entities(User.chat_id).all()
+    chat_ids = [chat_id for chat_id in chat_ids if chat_id in active_chats]
+    answers = Poll.query.filter_by(poll_id=poll_id).with_entities(Poll.poll_answers).first().poll_answers
+    answer_list = []
+    for answer_index, answer in enumerate(answers):
+        count = Answer.query.filter_by(poll_id=poll_id, answer_index=answer_index).count()
+        answer_list.append({"answer": answer, "count": count})
+    total_answers = sum([answer['count'] for answer in answer_list])
+    if total_answers != 0:
+        msg = f"Thanks for answering the question:\n" \
+              f"{poll_question}\n" \
+              f"The results are:\n"
+        for answer in answer_list:
+            msg += f"{answer['answer']}: {100 * answer['count'] // total_answers}%\n"
+        send_msg_to_chats(chat_ids, msg)
+    PollMapping.query.filter_by(poll_id=poll_id).delete()
+    Poll.query.filter_by(poll_id=poll_id).update(dict(active=False))
+    db.session.commit()
+
+    return ""
+
+
+@app.route('/polls/status', methods=['GET'])
+@auth.login_required()
+def get_polls_status():
+    polls = Poll.query.order_by(Poll.poll_id).all()
+    poll_list = []
+    for poll in polls:
+        num_answered = Answer.query.filter_by(poll_id=poll.poll_id).count()
+        num_pending = PollMapping.query.filter_by(poll_id=poll.poll_id).count()
+        poll_list.append({'poll_id':poll.poll_id,'question':poll.poll_question, 'num_answered':num_answered,
+                          'num_pending':num_pending, 'recipients':poll.recipients, 'active':poll.active})
+    return jsonify(poll_list)
 
 
 @app.route('/poll_answers', methods=['POST'])
@@ -133,6 +174,9 @@ def register_answer():
         if user is None:
             raise IntegrityError
         poll_mapping = PollMapping.query.filter_by(telegram_poll_id=telegram_poll_id).first()
+        if poll_mapping is None:
+            send_msg_to_chats([chat_id],"Sorry, your answer couldn't be recorded because this poll has been closed")
+            return ""
         poll_id = poll_mapping.poll_id
         poll = Poll.query.filter_by(poll_id=poll_id).first()
         if answer_index < 0 or answer_index >= len(poll.poll_answers):
@@ -152,12 +196,12 @@ def register_answer():
 
 @app.errorhandler(409)
 def conflict(error):
-    return str(error), 409
+    return error.description, 409
 
 
 @app.errorhandler(500)
 def internal_error(error):
-    return str(error), 500
+    return error.description, 500
 
 
 def setup_mock():
@@ -169,12 +213,12 @@ def setup_mock():
     admin = Admin(admin_name="Dana", password_hash=generate_password_hash("1234"))
     db.session.add(admin)
     # polls
-    poll = Poll(poll_id=0, poll_question="how you doin?", poll_answers=["ok", "fine", "*giggle*"])
+    poll = Poll(poll_id=0, poll_question="how you doin?", poll_answers=["ok", "fine", "*giggle*"], recipients=10)
     db.session.add(poll)
-    poll = Poll(poll_id=1, poll_question="what's your favorite color?", poll_answers=["black", "white"])
+    poll = Poll(poll_id=1, poll_question="what's your favorite color?", poll_answers=["black", "white"], recipients=10)
     db.session.add(poll)
     poll = Poll(poll_id=2, poll_question="what's your favorite season?",
-                poll_answers=["summer", "spring", "winter", "fall"])
+                poll_answers=["summer", "spring", "winter", "fall"], recipients=10)
     db.session.add(poll)
     # users
     user = User(chat_id=0)
@@ -249,8 +293,8 @@ def setup_mock():
     answer = Answer(chat_id=6, poll_id=2, answer_index=0)
     db.session.add(answer)
     # user 7
-    answer = Answer(chat_id=7, poll_id=0, answer_index=0)
-    db.session.add(answer)
+    # answer = Answer(chat_id=7, poll_id=0, answer_index=0)
+    # db.session.add(answer)
     answer = Answer(chat_id=7, poll_id=1, answer_index=1)
     db.session.add(answer)
     answer = Answer(chat_id=7, poll_id=2, answer_index=2)
@@ -269,7 +313,7 @@ def setup_mock():
     db.session.add(answer)
     answer = Answer(chat_id=9, poll_id=2, answer_index=0)
     db.session.add(answer)
-    # User.query.delete()
+    User.query.delete()
     db.session.commit()
 
 

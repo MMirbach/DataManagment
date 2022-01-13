@@ -10,33 +10,16 @@ interface MainProps {
 const Main: React.FC<MainProps> = ({ onLogOut }) => {
     const [feature, setFeature] = useState<FeatureTypes>(FeatureTypes.None);
 
-    const handleShowAdmin = (): void => {
-        setFeature(FeatureTypes.ShowAdmins);
-    };
-
-    const handleAddingAdmin = (): void => {
-        setFeature(FeatureTypes.AddAdmin);
-    };
-
-    const handleCreatingPoll = (): void => {
-        setFeature(FeatureTypes.CreatePoll);
-    };
-
-    const handleClose = (): void => {
-        setFeature(FeatureTypes.None);
+    const handleChangeFeature = (feature: FeatureTypes): void => {
+        setFeature(feature);
     };
 
     return (
         <React.Fragment>
-            <Navbar
-                onShowAdmins={handleShowAdmin}
-                onAddAdmin={handleAddingAdmin}
-                onCreatePoll={handleCreatingPoll}
-                onLogOut={onLogOut}
-            ></Navbar>
+            <Navbar onChange={handleChangeFeature} onLogOut={onLogOut}></Navbar>
             <Features
                 type={feature}
-                onClose={handleClose}
+                onClose={() => handleChangeFeature(FeatureTypes.None)}
                 on401={onLogOut}
             ></Features>
             <Charts on401={onLogOut}></Charts>
