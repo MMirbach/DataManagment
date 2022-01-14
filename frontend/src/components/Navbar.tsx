@@ -41,7 +41,7 @@ const Navbar: React.FC<NavBarProps> = ({ onChange, onLogOut }) => {
                         component="div"
                         sx={{ mr: 2, display: { xs: "none", md: "flex" } }}
                     >
-                        Polls
+                        The Pollinator
                     </Typography>
                     <Box
                         sx={{

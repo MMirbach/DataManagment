@@ -89,8 +89,9 @@ def create_poll(poll_question, poll_answers, recipients):
 
 
 def get_matching_chat_ids(poll_filters: dict):
+    active_chat_ids = [user.chat_id for user in User.query.all()]
     if len(poll_filters) == 0:
-        return [user.chat_id for user in User.query.all()]
+        return active_chat_ids
     chat_ids = list()
     ran_first_time = False
     for k, v in poll_filters.items():
@@ -100,10 +101,10 @@ def get_matching_chat_ids(poll_filters: dict):
             answer_results = Answer.query.filter_by(poll_id=k, answer_index=v).all()
             if not ran_first_time:
                 ran_first_time = True
-                chat_ids = [answer.chat_id for answer in answer_results]
+                chat_ids = [answer.chat_id for answer in answer_results if answer.chat_id in active_chat_ids]
             else:
-                answer_results = Answer.query.filter_by(poll_id=k, answer_index=v).all()
-                chat_ids = [answer.chat_id for answer in answer_results if answer.chat_id in chat_ids]
+                chat_ids = [answer.chat_id for answer in answer_results if
+                            answer.chat_id in chat_ids and answer.chat_id in active_chat_ids]
     return chat_ids
 
 

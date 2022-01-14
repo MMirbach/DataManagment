@@ -6,8 +6,8 @@ with open("frontend/.env", "w") as env:
 
 os.putenv('WERKZEUG_RUN_MAIN', 'true')
 
-os.popen('CALL conda.bat activate DataManagment && python bot.py')
-os.popen('CALL conda.bat activate DataManagment && python server.py')
+os.popen('CALL conda.bat activate DataManagement && python bot.py')
+os.popen('CALL conda.bat activate DataManagement && python server.py')
 process = subprocess.Popen('cd frontend && npm start', shell=True)
 process.wait()
 

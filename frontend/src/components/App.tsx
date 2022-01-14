@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import "../styles/App.css";
 import Login from "./Login";
 import Main from "./Main";
@@ -11,8 +11,10 @@ const encodeString = (base: string): string => {
 };
 
 function App() {
+    const [user, setUser] = useState<string>("");
     const handleLogOut = (): void => {
-        localStorage.removeItem("user");
+        sessionStorage.removeItem("user");
+        setUser("");
     };
 
     const handleLogin = async (username: string, password: string) => {
@@ -22,7 +24,10 @@ function App() {
                 `http://localhost:${process.env.REACT_APP_SERVER_PORT}/admins/login`,
                 { user: encoded }
             );
-            setTimeout(() => localStorage.setItem("user", encoded), 500);
+            setTimeout(() => {
+                sessionStorage.setItem("user", encoded);
+                setUser(encoded);
+            }, 500);
             return { type: AlertTypes.Success, msg: "Logged In" };
         } catch (error: any) {
             return { type: AlertTypes.Error, msg: error.response.data };
@@ -31,7 +36,7 @@ function App() {
 
     return (
         <div className="App">
-            {localStorage.getItem("user") === undefined ? (
+            {sessionStorage.getItem("user") === null ? (
                 <Login onLogin={handleLogin}></Login>
             ) : (
                 <Main onLogOut={handleLogOut}></Main>
