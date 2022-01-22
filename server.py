@@ -320,6 +320,9 @@ def setup_mock():
 if __name__ == '__main__':
     db.drop_all()
     db.create_all()
+    admin = Admin(admin_name="admin", password_hash=generate_password_hash("236369"))
+    db.session.add(admin)
+    db.session.commit()
     setup_mock()
 
     app.run(port=server_port, debug=True)
