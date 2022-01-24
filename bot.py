@@ -50,30 +50,12 @@ def register_answer_handler(update: Update, context: CallbackContext):
     resp = requests.post(f"http://localhost:{server_port}/poll_answers", data=data)
 
 
-
-def send_poll(update: Update, context: CallbackContext):
-    question, answers = ' '.join(context.args).split('?')
-    question += '?'
-    answers = answers.split(',')
-    filters = {}
-    data = {
-        'chat_id' : update.message.chat_id,
-        'question' : question,
-        'answers' : answers,
-        "poll_filters" : filters
-    }
-    requests.post(f"http://localhost:{server_port}/polls", data={'data' : json.dumps(data)})
-
-
-# TODO: check async responses
-
 if __name__ == '__main__':
     updater = Updater(bot_key)
     dp = updater.dispatcher
     dp.add_handler(CommandHandler("start", start_handler, run_async=True))
     dp.add_handler(CommandHandler("register", register_user_handler, run_async=True))
     dp.add_handler(CommandHandler("remove", remove_user_handler, run_async=True))
-    dp.add_handler(CommandHandler("send", send_poll))
     dp.add_handler(PollAnswerHandler(register_answer_handler))
 
     updater.start_polling()
